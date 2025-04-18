@@ -43,11 +43,21 @@ const Navbar = () => {
           }}
         >
           <img src={logo} alt='logo' className='w-9 h-9 object-contain' />
-          <p className='text-white text-[18px] font-bold cursor-pointer flex '>
-            Abhiram RS &nbsp;
-            <span className='sm:block hidden'> | Welcome to my Portfolio</span>
-          </p>
+          <div className='flex flex-col'>
+            <p className='text-white text-[18px] font-bold cursor-pointer flex items-center gap-2'>
+              Abhiram RS
+              <span className='sm:block hidden'> | Welcome to my Portfolio</span>
+            </p>
+            <div className='mt-1'>
+              <iframe 
+                src="https://tryhackme.com/api/v2/badges/public-profile?userPublicId=4593076" 
+                style={{ border: 'none', height: '40px', width: '100%' }} 
+                title="TryHackMe Badge"
+              />
+            </div>
+          </div>
         </Link>
+
 
         <ul className='list-none hidden sm:flex flex-row gap-10'>
           {navLinks.map((nav) => (
