@@ -9,6 +9,7 @@ const Hero = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
   const [typingSpeed, setTypingSpeed] = useState(150);
+  const [isAndroid, setIsAndroid] = useState(false);
 
   const words = ["a Web Developer", "an Android Developer"];
 
@@ -36,6 +37,13 @@ const Hero = () => {
     return () => clearTimeout(typingTimer);
   }, [text, isDeleting, typingSpeed, loopNum]);
 
+  useEffect(() => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    if (/android/i.test(userAgent)) {
+      setIsAndroid(true);
+    }
+  }, []);
+
   return (
     <section className={`relative w-full h-screen mx-auto`}>
       <div
@@ -51,18 +59,26 @@ const Hero = () => {
             Hi, I'm <span className="text-[#915EFF]">Abhiram RS</span>
           </h1>
           <p className={`${styles.heroSubText} mt-2 text-white-100`}>
-            I'm {" "}
+            I'm{" "}
             <span className="text-[#915EFF]">
               {text}
               <span className="blinking-cursor">|</span>
             </span>
           </p>
+
+          {isAndroid && (
+            <div className="mt-5 text-white-100 max-w-md leading-relaxed text-[17px]">
+              A 2025 Computer Science graduate passionate about building
+              responsive web apps, 3D experiences, and smart AI tools. Currently
+              looking for full-time opportunities where I can contribute and grow.
+            </div>
+          )}
         </div>
       </div>
 
-      <ComputersCanvas />
+      {!isAndroid && <ComputersCanvas />}
 
-      <div className="absolute xs:bottom-10 bottom-32 w-full flex justify-center items-center">
+      <div className={`absolute w-full flex justify-center items-center ${ isAndroid ? "bottom-12" : "bottom-32 xs:bottom-10" }`}>
         <a href="#about">
           <div className="w-[35px] h-[64px] rounded-3xl border-4 border-secondary flex justify-center items-start p-2">
             <motion.div

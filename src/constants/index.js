@@ -18,6 +18,7 @@ import {
   python,
   cprog,
   java,
+  reactjs,
 } from "../assets";
 
 export const navLinks = [
@@ -90,6 +91,10 @@ const technologies = [
   {
     name: "Java",
     icon: java,
+  },
+  {
+    name: "React JS",
+    icon: reactjs,
   },
 ];
 
