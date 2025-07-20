@@ -1,5 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { Github, Linkedin, FileDown, FileText } from "lucide-react";
+import { Github, Linkedin, FileUser, Library } from "lucide-react";
 
 const IconTooltip = ({ label, children }) => (
   <Tooltip.Provider>
@@ -53,7 +53,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-white transition duration-200"
           >
-            <FileDown size={28} />
+            <FileUser size={28} />
           </a>
         </IconTooltip>
 
@@ -64,7 +64,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-white transition duration-200"
           >
-            <FileText size={28} />
+            <Library size={28} />
           </a>
         </IconTooltip>
       </div>
