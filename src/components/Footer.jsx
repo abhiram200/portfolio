@@ -26,7 +26,7 @@ const Footer = () => {
       <div className="flex justify-center items-center gap-8 text-gray-400">
         <IconTooltip label="LinkedIn">
           <a
-            href="https://www.linkedin.com/in/abhiram-rs-183634300"
+            href="https://www.linkedin.com/in/abhiram-rs-183634300/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition duration-200"
