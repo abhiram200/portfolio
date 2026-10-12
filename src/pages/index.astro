@@ -1,0 +1,1100 @@
+---
+import { url } from '../lib/url.js';
+import Base from '../layouts/Base.astro';
+import ContactForm from '../components/ContactForm.astro';
+import WorkGraph from '../components/WorkGraph.astro';
+import LevelArt from '../components/LevelArt.astro';
+import Bug from '../components/Bug.astro';
+import { assistant } from '../data/assistant.js';
+import {
+  person,
+  experience,
+  volunteering,
+  projects,
+  otherWork,
+  education,
+  certifications,
+  publication,
+  skills,
+  resumeFile,
+} from '../data/profile.js';
+
+const description = `${person.name}: ${person.headline} ${person.role} at ${person.employer}, ${person.location}. Projects, experience, skills and contact.`;
+const languages = `${person.languages.slice(0, -1).join(', ')} and ${person.languages.at(-1)}`;
+const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-frontend)', 'var(--violet)'];
+---
+
+<Base title={`${person.name}, software engineer`} description={description} current="home">
+  <!-- HERO -->
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="mission" id="mission">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="9" ry="11" fill="#e5468f"></ellipse><circle cx="20" cy="11" r="5" fill="#ff6fb5"></circle></svg>
+        <span id="mission-text">Side quest: 5 bugs are hiding on this page. Debugging is his day job. Can you find them?</span>
+        <span class="mission-count" id="mission-count">0/5</span>
+      </p>
+      <h1 id="hero-title" class="name">{person.name}</h1>
+      <p class="headline">{person.headline}</p>
+      <p class="intro">{person.intro[0]}</p>
+      <p class="intro">{person.intro[1]}</p>
+      <p class="status">
+        <span class="pulse" aria-hidden="true"></span>
+        <span><strong>{person.seeking.summary}</strong> {person.seeking.detail}</span>
+      </p>
+      <div class="actions">
+        <a class="button primary" href="#work">Explore the projects</a>
+        <a class="button" href={`mailto:${person.email}`}>Email Abhiram</a>
+        <a class="button" href={url(resumeFile)}>Résumé (PDF)</a>
+      </div>
+      <Bug n={0} crawl class="bug-hero" />
+    </div>
+    <div class="hero-graph">
+      <WorkGraph />
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="section wrap" id="work" aria-labelledby="work-title">
+    <header class="section-head">
+      <h2 id="work-title">Projects</h2>
+      <p class="lede">Five builds, from a code knowledge graph to a chess engine he trained himself. Each one opens a full write-up: what it does, how it works and exactly what he did.</p>
+    </header>
+    <ul class="levels" role="list">
+      {
+        projects.map((p, i) => (
+          <li class:list={['level', { wide: i < 2 }]} data-slug={p.slug}>
+            <a href={url(`/work/${p.slug}/`)} class="level-link">
+              <div class="level-art">
+                <LevelArt slug={p.slug} />
+                <span class="explored" hidden>Explored</span>
+              </div>
+              <div class="level-body">
+                <p class="meta">
+                  {p.kind}, {p.dates}
+                </p>
+                <h3>{p.name}</h3>
+                <p class="tagline">{p.tagline}</p>
+                <ul class="loot" aria-label="Highlights">
+                  {p.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+                <span class="enter">
+                  Open the write-up<span class="visually-hidden">: {p.fullName ?? p.name}</span>
+                </span>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <Bug n={1} class="bug-work" />
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="section wrap" id="experience" aria-labelledby="experience-title">
+    <header class="section-head">
+      <h2 id="experience-title">Experience</h2>
+      <p class="lede">From WordPress to running servers on EC2 to keeping enterprise data pipelines healthy.</p>
+    </header>
+    <ol class="timeline" role="list">
+      {
+        experience.map((job) => (
+          <li class:list={['save', { current: job.current }]}>
+            <span class="node" aria-hidden="true" />
+            <article class="glass job">
+              <div class="job-top">
+                <p class="when">
+                  {job.start} to {job.end === 'Present' ? 'present' : job.end}
+                </p>
+                {job.current && <p class="now">Current role</p>}
+              </div>
+              <h3>{job.title}</h3>
+              <p class="org">
+                {job.org}, {job.place}
+              </p>
+              <p class="context">{job.context}</p>
+              <ul class="bullets">
+                {job.bullets.map((b) => (
+                  <li>{b}</li>
+                ))}
+              </ul>
+              {job.roles && (
+                <details class="roles">
+                  <summary>The four roles in the platform</summary>
+                  <dl>
+                    {job.roles.map((r) => (
+                      <div>
+                        <dt>{r.name}</dt>
+                        <dd>{r.text}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+              )}
+              <ul class="chips" aria-label="Stack">
+                {job.stack.map((s) => (
+                  <li>{s}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        ))
+      }
+      {
+        volunteering.map((v) => (
+          <li class="save">
+            <span class="node" aria-hidden="true" />
+            <article class="glass job">
+              <div class="job-top">
+                <p class="when">{v.year}</p>
+                <p class="vol">Volunteering</p>
+              </div>
+              <h3>{v.title}</h3>
+              <p class="org">{v.org}</p>
+              <p>{v.text}</p>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+    <Bug n={2} class="bug-exp" />
+  </section>
+
+  <!-- SKILLS -->
+  <section class="section wrap" id="skills" aria-labelledby="skills-title">
+    <header class="section-head">
+      <h2 id="skills-title">Skills, with receipts</h2>
+      <p class="lede">Grouped by area, with the work where each one was used.</p>
+    </header>
+    <div class="inventory">
+      {
+        skills.map((s, i) => (
+          <div class="glass slot" style={`--c: ${areaColor[i]}`}>
+            <h3>{s.area}</h3>
+            <p class="evidence">Used in {s.evidence}</p>
+            <ul class="chips">
+              {s.items.map((it) => (
+                <li>{it}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+    <Bug n={3} class="bug-skills" />
+  </section>
+
+  <!-- CREDENTIALS -->
+  <section class="section wrap" id="credentials" aria-labelledby="cred-title">
+    <header class="section-head">
+      <h2 id="cred-title">Badges earned</h2>
+      <p class="lede">Every certification links to its public verification page.</p>
+    </header>
+    <ul class="badges" role="list">
+      {
+        certifications.map((c, i) => (
+          <li class="glass badge-card">
+            {c.badge ? (
+              <img class="badge-img" src={c.badge} alt="" width="96" height="96" loading="lazy" decoding="async" />
+            ) : (
+              <svg class="hex" viewBox="0 0 60 66" aria-hidden="true">
+                <defs>
+                  <linearGradient id={`hg${i}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color={i === 2 ? '#8b6cff' : '#ffd166'} />
+                    <stop offset="1" stop-color={i === 2 ? '#1f9cc6' : '#ff6fb5'} />
+                  </linearGradient>
+                </defs>
+                <path d="M30 2 L57 17 V49 L30 64 L3 49 V17 Z" fill={`url(#hg${i})`} />
+                <path d="M19 33 l7 7 15 -15" stroke="#110e33" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            )}
+            <div class="badge-body">
+              <h3>{c.name}</h3>
+              <p class="meta">
+                {c.issuer}. Earned {c.earned}, valid to {c.validTo}.
+              </p>
+              <a href={c.href} data-verify class="verify">
+                Verify credential<span class="visually-hidden">: {c.name}</span>
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="cred-row">
+      <article class="glass cred">
+        <h3>Education</h3>
+        <p class="strong">{education.degree}</p>
+        <p class="meta">
+          {education.school}, {education.place}. {education.dates}.
+        </p>
+      </article>
+      <article class="glass cred">
+        <h3>Publication</h3>
+        <p class="strong">“{publication.title}”</p>
+        <p class="meta">
+          {publication.venue}, {publication.issue}. {publication.authors}.
+        </p>
+        <a href={publication.href}>Read the paper (PDF)</a>
+      </article>
+    </div>
+    <Bug n={4} class="bug-cred" />
+  </section>
+
+  <!-- SIDE QUESTS -->
+  <section class="section wrap side" aria-labelledby="side-title">
+    <h2 id="side-title" class="side-title">Earlier experiments</h2>
+    <p class="meta">{otherWork.note} Minor next to the projects above.</p>
+    <ul class="side-list" role="list">
+      {
+        otherWork.items.map((i) => (
+          <li>
+            <a href={i.href}>{i.name}</a>
+            <span class="meta">{i.text}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section wrap" id="contact" aria-labelledby="contact-title">
+    <div class="finale">
+      <h2 id="contact-title">Let’s build something.</h2>
+      <div class="finale-grid">
+        <div class="finale-info">
+          <p class="lede">{person.seeking.summary} Write below, or email him directly.</p>
+          <p class="big-email"><a href={`mailto:${person.email}`}>{person.email}</a></p>
+          <div class="actions">
+            <a class="button" href={person.linkedin}>LinkedIn</a>
+            <a class="button" href={person.github}>GitHub</a>
+            <a class="button" href={url(resumeFile)}>Résumé (PDF)</a>
+            <button class="button" type="button" data-open-bit>Ask {assistant.name}</button>
+          </div>
+          <ul class="facts" role="list">
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+              <span>Local time in Trivandrum</span>
+              <strong id="local-time">IST (UTC+5:30)</strong>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"></circle></svg>
+              <span>Based in</span>
+              <strong>{person.location}</strong>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H9l-5 4V5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+              <span>Speaks</span>
+              <strong>{languages}</strong>
+            </li>
+          </ul>
+        </div>
+        <ContactForm />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { state, BUG_COUNT } from '../scripts/game.js';
+
+  const count = document.getElementById('mission-count')!;
+  const text = document.getElementById('mission-text')!;
+  const initial = text.textContent;
+  const update = () => {
+    const n = state().bugs.length;
+    count.textContent = `${n}/${BUG_COUNT}`;
+    text.textContent = n >= BUG_COUNT ? 'All 5 bugs squashed. Finding the root cause is his day job, too.' : initial;
+    document.getElementById('mission')!.classList.toggle('done', n >= BUG_COUNT);
+  };
+  update();
+  document.addEventListener('game:change', update);
+
+  const markVisited = () => {
+    const seen = new Set(state().visited);
+    document.querySelectorAll<HTMLElement>('.level').forEach((li) => {
+      (li.querySelector('.explored') as HTMLElement).hidden = !seen.has(li.dataset.slug!);
+    });
+  };
+  markVisited();
+  document.addEventListener('game:change', markVisited);
+
+  // Live local time in Trivandrum, for anyone planning a call.
+  const clock = document.getElementById('local-time');
+  if (clock) {
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const tickClock = () => (clock.textContent = `${fmt.format(new Date())} IST`);
+    tickClock();
+    setInterval(tickClock, 30000);
+  }
+</script>
+
+<style>
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+    padding-top: clamp(2rem, 5vw, 4.5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+      gap: 3rem;
+      min-height: calc(100vh - 64px);
+      padding-bottom: 2rem;
+    }
+  }
+
+  .hero-copy {
+    position: relative;
+  }
+
+  .mission {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 100%;
+    margin: 0 0 1.5rem;
+    padding: 0.45rem 0.55rem 0.45rem 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.35;
+    border-radius: 16px;
+    background: rgb(229 70 143 / 0.12);
+    border: 1px solid rgb(255 111 181 / 0.45);
+  }
+
+  .mission svg {
+    width: 20px;
+    flex: none;
+  }
+
+  .mission-count {
+    flex: none;
+    font-weight: 800;
+    color: var(--accent-ink);
+    background: var(--pink);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mission.done {
+    background: rgb(255 209 102 / 0.12);
+    border-color: rgb(255 209 102 / 0.5);
+  }
+
+  .mission.done .mission-count {
+    background: var(--accent);
+  }
+
+  .name {
+    font-size: clamp(3.1rem, 1.2rem + 6.2vw, 6.4rem);
+    font-weight: 900;
+    font-stretch: 120%;
+    letter-spacing: -0.04em;
+    line-height: 0.88;
+    background: linear-gradient(100deg, #ffffff 30%, #d8ccff 60%, #ffb8dc 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @media (forced-colors: active) {
+    .name {
+      color: CanvasText;
+      background: none;
+    }
+  }
+
+  .headline {
+    font-size: var(--step-2);
+    font-weight: 650;
+    line-height: 1.2;
+    margin: 1.1rem 0 1.4rem;
+    max-width: 26ch;
+    color: var(--accent);
+  }
+
+  .intro {
+    color: var(--muted);
+    max-width: 36rem;
+  }
+
+  .status {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    max-width: 36rem;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    background: rgb(47 168 90 / 0.1);
+    border: 1px solid rgb(47 168 90 / 0.45);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .status strong {
+    display: block;
+  }
+
+  .pulse {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 0.4rem;
+    border-radius: 50%;
+    background: #3ad07a;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pulse {
+      animation: pulse 1.8s ease-out infinite;
+    }
+
+    .hero-copy > :not(:global(.bug)) {
+      animation: enter 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .hero-copy > :nth-child(2) { animation-delay: 0.05s; }
+    .hero-copy > :nth-child(3) { animation-delay: 0.12s; }
+    .hero-copy > :nth-child(4) { animation-delay: 0.18s; }
+    .hero-copy > :nth-child(5) { animation-delay: 0.22s; }
+    .hero-copy > :nth-child(6) { animation-delay: 0.28s; }
+    .hero-copy > :nth-child(7) { animation-delay: 0.34s; }
+
+    .hero-graph {
+      animation: enter 0.9s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgb(58 208 122 / 0.6); }
+    100% { box-shadow: 0 0 0 12px rgb(58 208 122 / 0); }
+  }
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(18px); }
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  :global(.bug-hero) {
+    top: 3.8rem;
+    left: 30%;
+  }
+
+  /* ---------- sections ---------- */
+  .section {
+    position: relative;
+    padding-top: clamp(4rem, 9vw, 7rem);
+  }
+
+  .section-head {
+    max-width: 46rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .section-head h2 {
+    font-size: var(--step-4);
+    font-stretch: 112%;
+    letter-spacing: -0.03em;
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    margin-top: 0.8rem;
+  }
+
+  /* ---------- project levels ---------- */
+  .levels {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 48rem) {
+    .levels {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .level {
+      grid-column: span 3;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .level {
+      grid-column: span 2;
+    }
+
+    .level.wide {
+      grid-column: span 3;
+    }
+  }
+
+  .level-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(170deg, #221d5c, #18144a);
+    border: 1px solid var(--line);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s, box-shadow 0.25s;
+  }
+
+  .level-link:hover,
+  .level-link:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 0.35), 0 0 0 1px var(--accent), 0 0 40px rgb(255 209 102 / 0.15);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .level-link:hover {
+      transform: translateY(-6px);
+    }
+
+    .level-link:hover .level-art :global(.art) {
+      transform: scale(1.05);
+    }
+  }
+
+  .level-art {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background:
+      radial-gradient(circle at 70% 40%, rgb(139 108 255 / 0.35), transparent 60%),
+      #14113f;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .level-art :global(.art) {
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .explored {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--accent-ink);
+    background: var(--accent);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  .level-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem 1.35rem 1.4rem;
+  }
+
+  .level-body .meta {
+    margin: 0 0 0.4rem;
+  }
+
+  .level h3 {
+    font-size: var(--step-3);
+    font-stretch: 115%;
+    letter-spacing: -0.03em;
+  }
+
+  .tagline {
+    margin: 0.55rem 0 1rem;
+    color: var(--muted);
+  }
+
+  .loot {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .loot li {
+    font-size: 0.8rem;
+    font-weight: 650;
+    padding: 0.28rem 0.6rem 0.28rem 0.5rem;
+    border-radius: 8px;
+    background: rgb(255 209 102 / 0.1);
+    border: 1px solid rgb(255 209 102 / 0.3);
+    color: #ffe3a3;
+  }
+
+  .loot li::before {
+    content: '◆ ';
+    color: var(--accent);
+    font-size: 0.7em;
+  }
+
+  .enter {
+    margin-top: auto;
+    font-weight: 750;
+    color: var(--accent);
+  }
+
+  :global(.bug-work) {
+    top: clamp(3.4rem, 8vw, 6rem);
+    right: 8%;
+  }
+
+  /* ---------- experience ---------- */
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 2rem;
+    position: relative;
+    display: grid;
+    gap: 1.25rem;
+    max-width: 56rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: linear-gradient(var(--accent), var(--pink), var(--violet), transparent);
+  }
+
+  .save {
+    position: relative;
+  }
+
+  .node {
+    position: absolute;
+    left: -2rem;
+    top: 1.6rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 3px solid var(--violet);
+  }
+
+  .save.current .node {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 5px rgb(255 209 102 / 0.2);
+  }
+
+  .job {
+    padding: 1.4rem 1.5rem;
+  }
+
+  .save.current .job {
+    border-color: rgb(255 209 102 / 0.55);
+  }
+
+  .job-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .job-top p {
+    margin: 0;
+  }
+
+  .when {
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: var(--muted);
+  }
+
+  .now,
+  .vol {
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    color: var(--accent-ink);
+    background: var(--accent);
+  }
+
+  .vol {
+    background: var(--violet);
+    color: #fff;
+  }
+
+  .job h3 {
+    font-size: var(--step-2);
+    font-stretch: 105%;
+  }
+
+  .org {
+    font-weight: 650;
+    color: var(--accent);
+    margin: 0.3rem 0 0.8rem;
+  }
+
+  .context {
+    color: var(--muted);
+  }
+
+  .bullets {
+    padding-left: 1.1rem;
+    margin: 0 0 1rem;
+  }
+
+  .bullets li + li {
+    margin-top: 0.45rem;
+  }
+
+  .bullets li::marker {
+    color: var(--accent);
+  }
+
+  .roles {
+    margin: 0 0 1rem;
+  }
+
+  .roles summary {
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--accent);
+    padding-block: 0.5rem;
+  }
+
+  .roles dl {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0.5rem 0 0;
+  }
+
+  @media (min-width: 40rem) {
+    .roles dl {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .roles div {
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid var(--line);
+  }
+
+  .roles dt {
+    font-weight: 800;
+  }
+
+  .roles dd {
+    margin: 0.2rem 0 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  :global(.bug-exp) {
+    top: clamp(4rem, 9vw, 7rem);
+    right: 12%;
+  }
+
+  /* ---------- skills ---------- */
+  .inventory {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  @media (min-width: 48rem) {
+    .inventory {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .inventory {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .slot {
+    position: relative;
+    padding: 1.3rem 1.35rem 1.4rem;
+    overflow: hidden;
+  }
+
+  .slot::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--c);
+  }
+
+  .slot h3 {
+    font-size: var(--step-1);
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .slot h3::before {
+    content: '';
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: 0 0 12px var(--c);
+  }
+
+  .evidence {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0.4rem 0 0.9rem;
+  }
+
+  :global(.bug-skills) {
+    top: clamp(4.5rem, 10vw, 8rem);
+    right: 22%;
+  }
+
+  /* ---------- credentials ---------- */
+  .badges {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.1rem;
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  @media (min-width: 56rem) {
+    .badges {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .badge-card {
+    display: flex;
+    gap: 1.1rem;
+    padding: 1.3rem;
+    align-items: stretch;
+  }
+
+  .badge-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .badge-body .verify {
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  .badge-img {
+    flex: none;
+    align-self: flex-start;
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 16px rgb(0 0 0 / 0.35));
+  }
+
+  .hex {
+    flex: none;
+    width: 56px;
+    margin: 0 8px;
+    filter: drop-shadow(0 6px 16px rgb(255 209 102 / 0.25));
+  }
+
+  .badge-card h3 {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin-bottom: 0.35rem;
+  }
+
+  .badge-card p {
+    margin-bottom: 0.4rem;
+  }
+
+  .badge-card a,
+  .cred a {
+    display: inline-block;
+    padding-block: 0.3rem;
+    font-weight: 700;
+  }
+
+  .cred-row {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  @media (min-width: 56rem) {
+    .cred-row {
+      grid-template-columns: 1fr 2fr;
+    }
+  }
+
+  .cred {
+    padding: 1.3rem 1.4rem;
+  }
+
+  .cred h3 {
+    font-size: 0.95rem;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .strong {
+    font-weight: 750;
+    margin: 0 0 0.3rem;
+  }
+
+  :global(.bug-cred) {
+    top: clamp(4rem, 9vw, 7rem);
+    right: 30%;
+  }
+
+  /* ---------- side quests ---------- */
+  .side-title {
+    font-size: var(--step-2);
+    margin-bottom: 0.3rem;
+  }
+
+  .side-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  @media (min-width: 48rem) {
+    .side-list {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem 2rem;
+    }
+  }
+
+  .side-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+    align-items: baseline;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding-block: 0.3rem;
+  }
+
+  .side-list a {
+    font-weight: 700;
+  }
+
+  /* ---------- contact ---------- */
+  .finale {
+    position: relative;
+    padding: clamp(1.75rem, 5vw, 3.5rem);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 90% 0%, rgb(255 111 181 / 0.25), transparent 50%),
+      radial-gradient(circle at 0% 100%, rgb(139 108 255 / 0.35), transparent 55%),
+      #1a1650;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .finale h2 {
+    font-size: var(--step-5);
+    font-stretch: 115%;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    max-width: 12ch;
+  }
+
+  .big-email {
+    font-size: clamp(1.25rem, 0.55rem + 1.55vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 1.25rem 0 1.5rem;
+    white-space: nowrap;
+  }
+
+  .finale-grid {
+    display: grid;
+    gap: 2rem 3rem;
+    margin-top: 1.25rem;
+    align-items: start;
+  }
+
+  @media (min-width: 62rem) {
+    .finale-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    }
+  }
+
+  .finale .lede {
+    margin-top: 0;
+  }
+
+  .finale .actions {
+    margin-bottom: 1.75rem;
+  }
+
+  .facts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .facts li {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .facts svg {
+    grid-row: span 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.55rem;
+    border-radius: 12px;
+    color: var(--accent);
+    background: rgb(255 209 102 / 0.12);
+  }
+
+  .facts span {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .facts strong {
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

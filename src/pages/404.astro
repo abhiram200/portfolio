@@ -1,0 +1,40 @@
+---
+import { url } from '../lib/url.js';
+import Base from '../layouts/Base.astro';
+import { projects } from '../data/profile.js';
+---
+
+<Base title="Page not found | Abhiram RS" description="This page doesn't exist on Abhiram RS's portfolio." noindex>
+  <div class="wrap nf">
+    <h1>Page not found</h1>
+    <p>There’s nothing at this address. It may have moved, or the link may have a typo.</p>
+    <p><a class="button primary" href={url('/')}>Go to the home page</a></p>
+    <h2>Or go straight to a project</h2>
+    <ul>
+      {projects.map((p) => <li><a href={url(`/work/${p.slug}/`)}>{p.fullName ?? p.name}</a></li>)}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .nf {
+    padding-top: clamp(2rem, 6vw, 5rem);
+    max-width: 44rem;
+  }
+
+  h1 {
+    font-size: var(--step-4);
+    font-stretch: 118%;
+    font-weight: 850;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: var(--step-1);
+    margin: 2.5rem 0 0.75rem;
+  }
+
+  li + li {
+    margin-top: 0.4rem;
+  }
+</style>

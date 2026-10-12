@@ -1,0 +1,745 @@
+---
+import { url } from '../lib/url.js';
+import '../styles/global.css';
+import Assistant from '../components/Assistant.astro';
+import { assistant } from '../data/assistant.js';
+import { person, resumeFile, projects } from '../data/profile.js';
+import { ACHIEVEMENTS } from '../scripts/game.js';
+import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+
+interface Props {
+  title: string;
+  description: string;
+  current?: 'home' | 'work';
+  noindex?: boolean;
+}
+
+const { title, description, current, noindex = false } = Astro.props;
+const canonical = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.site).href : null;
+const ogImage = Astro.site ? new URL(url('/og.png'), Astro.site).href : url('/og.png');
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+    <meta name="description" content={description} />
+    <meta name="author" content={person.name} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={url('/favicon-32.png')} sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
+    <meta name="theme-color" content="#110e33" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={person.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${person.name}: ${person.headline}`} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      try {
+        if (localStorage.getItem('ar-motion') === 'off') document.documentElement.dataset.motion = 'off';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="hud">
+      <div class="wrap hud-inner">
+        <a class="logo" href={url('/')} aria-current={current === 'home' ? 'page' : undefined}>
+          <span class="logo-mark" aria-hidden="true">A<span>_</span></span>
+          <span class="logo-name">{person.name}</span>
+        </a>
+        <nav aria-label="Main" class="nav">
+          <ul>
+            <li><a href={url('/#work')} aria-current={current === 'work' ? 'page' : undefined}>Projects</a></li>
+            <li><a href={url('/#experience')}>Experience</a></li>
+            <li><a href={url('/#skills')}>Skills</a></li>
+            <li><a href={url('/#contact')}>Contact</a></li>
+          </ul>
+        </nav>
+        <div class="hud-tools">
+          <details class="trophies" id="trophies">
+            <summary>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v3a5 5 0 0 1-10 0V4Zm0 1H4v1a3 3 0 0 0 3 3m10-4h3v1a3 3 0 0 1-3 3M12 12v4m-4 4h8m-6-4h4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <span class="count" id="trophy-count">0/{ACHIEVEMENTS.length}</span>
+              <span class="visually-hidden">achievements unlocked</span>
+            </summary>
+            <div class="trophy-panel glass">
+              <p class="trophy-title">Explorer achievements</p>
+              <p class="meta">Unlocked as you explore the site. Progress stays in your browser.</p>
+              <ul id="trophy-list">
+                {
+                  ACHIEVEMENTS.map((a) => (
+                    <li data-ach={a.id}>
+                      <span class="badge" aria-hidden="true" />
+                      <span>
+                        <strong>{a.title}</strong>
+                        <span class="state visually-hidden">locked</span>
+                        <span class="meta">{a.text}</span>
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+              <div class="trophy-actions">
+                <button type="button" class="mini-btn" id="motion-toggle" aria-pressed="false">Pause animations</button>
+                <button type="button" class="mini-btn" id="game-reset">Reset progress</button>
+              </div>
+            </div>
+          </details>
+          <button type="button" class="ask-btn" data-open-bit>
+            <span class="dot" aria-hidden="true"></span>Ask {assistant.name}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="foot-top">
+          <div class="foot-brand">
+            <a class="foot-logo" href={url('/')}>
+              <span class="logo-mark" aria-hidden="true">A<span>_</span></span>
+              <span>{person.name}</span>
+            </a>
+            <p class="foot-line">{person.headline}</p>
+            <p class="foot-status"><span class="foot-pulse" aria-hidden="true"></span>{person.seeking.summary}</p>
+          </div>
+
+          <nav class="foot-col" aria-label="Footer">
+            <p class="foot-h">Explore</p>
+            <ul>
+              <li><a href={url('/#work')}>Projects</a></li>
+              <li><a href={url('/#experience')}>Experience</a></li>
+              <li><a href={url('/#skills')}>Skills</a></li>
+              <li><a href={url('/#credentials')}>Badges</a></li>
+              <li><a href={url('/#contact')}>Contact</a></li>
+            </ul>
+          </nav>
+
+          <div class="foot-col">
+            <p class="foot-h">Projects</p>
+            <ul>
+              {projects.map((p) => <li><a href={url(`/work/${p.slug}/`)}>{p.name}</a></li>)}
+            </ul>
+          </div>
+
+          <div class="foot-col">
+            <p class="foot-h">Find him</p>
+            <ul class="foot-social">
+              <li>
+                <a href={person.github} rel="me" class="soc">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"></path></svg>
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a href={person.linkedin} rel="me" class="soc">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"></path></svg>
+                  LinkedIn
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${person.email}`} class="soc">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+                  Email
+                </a>
+              </li>
+              <li>
+                <a href={url(resumeFile)} class="soc">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7V3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M14 3v4h4M10 12h5M10 16h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                  Résumé (PDF)
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="foot-bottom">
+          <p class="foot-copy">© {year} {person.name}. {person.location}.</p>
+          <div class="foot-progress">
+            <span>Explorer progress</span>
+            <span class="bar" aria-hidden="true"><span id="foot-bar"></span></span>
+            <strong id="foot-progress">0 of {ACHIEVEMENTS.length}</strong>
+          </div>
+          <a class="to-top" href="#main">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Back to top
+          </a>
+        </div>
+      </div>
+      <p class="foot-wordmark" aria-hidden="true">{person.name}</p>
+    </footer>
+
+    <Assistant />
+  </body>
+</html>
+
+<script>
+  import { ACHIEVEMENTS, state, unlock, reset } from '../scripts/game.js';
+  import { markExternal } from '../scripts/links.js';
+
+  markExternal();
+
+  const count = document.getElementById('trophy-count')!;
+  const render = () => {
+    const got = new Set(state().ach);
+    count.textContent = `${got.size}/${ACHIEVEMENTS.length}`;
+    const fp = document.getElementById('foot-progress');
+    const fb = document.getElementById('foot-bar');
+    if (fp) fp.textContent = `${got.size} of ${ACHIEVEMENTS.length}`;
+    if (fb) fb.style.width = `${(got.size / ACHIEVEMENTS.length) * 100}%`;
+    document.querySelectorAll<HTMLElement>('#trophy-list li').forEach((li) => {
+      const on = got.has(li.dataset.ach!);
+      li.classList.toggle('on', on);
+      li.querySelector('.state')!.textContent = on ? 'unlocked' : 'locked';
+    });
+  };
+  render();
+  document.addEventListener('game:change', render);
+  document.addEventListener('game:unlock', () => {
+    const s = count.parentElement!;
+    s.classList.remove('pop');
+    void s.offsetWidth;
+    s.classList.add('pop');
+  });
+
+  // Close the achievements popover on outside click or Escape.
+  const trophies = document.getElementById('trophies') as HTMLDetailsElement;
+  document.addEventListener('click', (e) => {
+    if (trophies.open && !trophies.contains(e.target as Node)) trophies.open = false;
+  });
+  trophies.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && trophies.open) {
+      trophies.open = false;
+      trophies.querySelector('summary')!.focus();
+    }
+  });
+
+  document.getElementById('game-reset')!.addEventListener('click', () => reset());
+
+  const motion = document.getElementById('motion-toggle')!;
+  const syncMotion = () => {
+    const off = document.documentElement.dataset.motion === 'off';
+    motion.setAttribute('aria-pressed', String(off));
+    motion.textContent = off ? 'Play animations' : 'Pause animations';
+  };
+  syncMotion();
+  motion.addEventListener('click', () => {
+    const off = document.documentElement.dataset.motion !== 'off';
+    if (off) document.documentElement.dataset.motion = 'off';
+    else delete document.documentElement.dataset.motion;
+    try {
+      localStorage.setItem('ar-motion', off ? 'off' : 'on');
+    } catch {
+      /* ignore */
+    }
+    syncMotion();
+  });
+
+  // Achievement hooks for links anywhere on the site.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as Element).closest('a');
+    if (!a) return;
+    if (a.getAttribute('href')?.endsWith('Abhiram-RS-Resume.pdf')) unlock('resume');
+    if (a.hasAttribute('data-verify')) unlock('verified');
+  });
+</script>
+
+<style>
+  :global(html[data-motion='off'] *),
+  :global(html[data-motion='off'] *::before),
+  :global(html[data-motion='off'] *::after) {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hud {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgb(17 14 51 / 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgb(52 46 122 / 0.7);
+  }
+
+  .hud-inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 64px;
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 800;
+    font-stretch: 112%;
+    padding-block: 0.5rem;
+  }
+
+  .logo-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+  }
+
+  .logo-mark span {
+    color: #2fa85a;
+    margin-left: 1px;
+  }
+
+  .nav {
+    margin-left: auto;
+  }
+
+  .nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.15rem;
+  }
+
+  .nav a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+  }
+
+  .nav a:hover,
+  .nav a[aria-current='page'] {
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .hud-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .trophies {
+    position: relative;
+  }
+
+  .trophies summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.05);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--accent);
+  }
+
+  .trophies summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .trophies summary svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .trophies summary.pop {
+    animation: pop 0.6s ease;
+  }
+
+  @keyframes pop {
+    40% {
+      transform: scale(1.18);
+      box-shadow: 0 0 0 6px rgb(255 209 102 / 0.25);
+    }
+  }
+
+  .trophy-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: min(340px, calc(100vw - 2rem));
+    padding: 1.1rem;
+    background: #1a1650;
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
+  }
+
+  .trophy-title {
+    font-weight: 800;
+    margin: 0 0 0.2rem;
+  }
+
+  .trophy-panel ul {
+    list-style: none;
+    margin: 0.8rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .trophy-panel li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+  }
+
+  .trophy-panel li strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .trophy-panel li.on strong {
+    color: var(--ink);
+  }
+
+  .trophy-panel li .meta {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .badge {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin-top: 2px;
+    border-radius: 8px;
+    border: 2px dashed var(--muted);
+  }
+
+  li.on .badge {
+    border: 0;
+    background: linear-gradient(135deg, var(--accent), var(--pink));
+    box-shadow: 0 0 14px rgb(255 209 102 / 0.45);
+  }
+
+  .trophy-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .mini-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--ink);
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+    min-height: 38px;
+    cursor: pointer;
+  }
+
+  .ask-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 750;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .ask-btn .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1d7a3f;
+    box-shadow: 0 0 0 3px rgb(47 168 90 / 0.35);
+  }
+
+  main:focus {
+    outline: none;
+  }
+
+  .site-footer {
+    position: relative;
+    margin-top: clamp(4rem, 9vw, 8rem);
+    padding-top: clamp(2.5rem, 5vw, 3.5rem);
+    overflow: hidden;
+    background:
+      radial-gradient(50rem 20rem at 15% 0%, rgb(139 108 255 / 0.18), transparent 70%),
+      radial-gradient(40rem 18rem at 90% 10%, rgb(255 111 181 / 0.1), transparent 70%),
+      #0d0b2b;
+  }
+
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--pink), var(--violet), transparent);
+  }
+
+  .foot-top {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 60rem) {
+    .foot-top {
+      grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+      gap: 2.5rem;
+    }
+  }
+
+  .foot-brand {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 60rem) {
+    .foot-brand {
+      grid-column: auto;
+    }
+  }
+
+  .foot-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 850;
+    font-stretch: 112%;
+    font-size: 1.15rem;
+  }
+
+  .foot-line {
+    margin: 0.9rem 0 0.9rem;
+    max-width: 24rem;
+    color: var(--muted);
+  }
+
+  .foot-status {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin: 0;
+    max-width: 24rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 0.55rem 0.8rem;
+    border-radius: 12px;
+    background: rgb(47 168 90 / 0.1);
+    border: 1px solid rgb(47 168 90 / 0.4);
+  }
+
+  .foot-pulse {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background: #3ad07a;
+    box-shadow: 0 0 0 4px rgb(58 208 122 / 0.2);
+  }
+
+  .foot-h {
+    margin: 0 0 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  .foot-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .foot-col a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-block: 0.35rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .foot-col a:hover {
+    color: var(--accent);
+  }
+
+  .soc svg {
+    width: 2rem;
+    height: 2rem;
+    padding: 0.45rem;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid var(--line);
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .soc:hover svg {
+    background: rgb(255 209 102 / 0.14);
+    border-color: var(--accent);
+  }
+
+  .foot-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: clamp(2rem, 5vw, 3rem);
+    padding: 1.25rem 0;
+    border-top: 1px solid rgb(52 46 122 / 0.7);
+  }
+
+  @media (min-width: 48rem) {
+    .foot-bottom {
+      padding-right: 6.5rem;
+    }
+  }
+
+  .foot-copy {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .foot-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .foot-progress strong {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar {
+    position: relative;
+    width: 6rem;
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+
+  .bar span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--pink));
+    transition: width 0.4s ease;
+  }
+
+  .to-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.05);
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .to-top svg {
+    width: 16px;
+  }
+
+  .to-top:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .foot-wordmark {
+    margin: 0;
+    padding: 0 var(--gutter);
+    font-size: clamp(3rem, 12vw, 12rem);
+    font-weight: 900;
+    font-stretch: 112%;
+    letter-spacing: -0.05em;
+    line-height: 0.8;
+    text-align: center;
+    white-space: nowrap;
+    color: transparent;
+    background: linear-gradient(180deg, rgb(139 108 255 / 0.35), rgb(139 108 255 / 0));
+    -webkit-background-clip: text;
+    background-clip: text;
+    transform: translateY(12%);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  @media (max-width: 52rem) {
+    .nav {
+      display: none;
+    }
+
+    .hud-tools {
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width: 26rem) {
+    .logo-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+</style>

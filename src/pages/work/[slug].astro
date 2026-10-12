@@ -1,0 +1,401 @@
+---
+import { url } from '../../lib/url.js';
+import Base from '../../layouts/Base.astro';
+import EloLadder from '../../components/EloLadder.astro';
+import LevelArt from '../../components/LevelArt.astro';
+import { projects, forcingKnightElo as elo, publication } from '../../data/profile.js';
+import { fmt, plain } from '../../lib/fmt.js';
+
+export function getStaticPaths() {
+  return projects.map((p, i) => ({
+    params: { slug: p.slug },
+    props: { project: p, prev: projects[i - 1] ?? null, next: projects[i + 1] ?? null },
+  }));
+}
+
+const { project: p, prev, next } = Astro.props;
+const title = `${p.fullName ?? p.name}: ${p.tagline.replace(/\.$/, '')} | Abhiram RS`;
+const description = plain(p.summary);
+---
+
+<Base title={title} description={description} current="work">
+  <article class="case" data-slug={p.slug}>
+    <header class="case-head wrap">
+      <p class="crumb"><a href={url('/#work')}>All projects</a></p>
+      <div class="head-grid">
+        <div>
+          <p class="meta kind">{p.kind}, {p.dates}</p>
+          <h1 class="case-name">{p.name}</h1>
+          {p.fullName && <p class="full-name">{p.fullName}</p>}
+          <p class="tagline">{p.tagline}</p>
+          <ul class="loot" aria-label="Highlights">
+            {p.highlights.map((h) => <li>{h}</li>)}
+          </ul>
+          <div class="head-actions">
+            {p.links.map((l) => <a class="button primary" href={l.href}>{l.label}</a>)}
+          </div>
+        </div>
+        <div class="head-art glass">
+          <LevelArt slug={p.slug} />
+        </div>
+      </div>
+    </header>
+
+    <div class="case-grid wrap">
+      <aside class="facts glass" aria-label="Project facts">
+        <dl>
+          <div><dt>Status</dt><dd>{p.status}</dd></div>
+          {p.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
+          <div>
+            <dt>Stack</dt>
+            <dd>
+              <ul class="chips">
+                {p.stack.map((s) => <li>{s}</li>)}
+              </ul>
+            </dd>
+          </div>
+        </dl>
+      </aside>
+
+      <div class="prose">
+        <p class="summary">{p.summary}</p>
+
+        {
+          p.sections.map((s) => (
+            <section>
+              <h2>{s.heading}</h2>
+              {s.paragraphs?.map((t) => <p set:html={fmt(t)} />)}
+              {s.list && (
+                <ul>
+                  {s.list.map((t) => (
+                    <li set:html={fmt(t)} />
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))
+        }
+
+        {
+          p.slug === 'forcingknight' && (
+            <section>
+              <h2>Measuring strength</h2>
+              <p>{elo.method}</p>
+              <EloLadder caption="Scaling the data: raw network, no search" about="Maia ladder (human scale)." rows={elo.maia.scaling} showDelta={false} />
+              <EloLadder caption="What each layer adds to the 100M model" about={`${elo.maia.name}. ${elo.maia.about}`} rows={elo.maia.ablation} />
+              <EloLadder caption="The same ablation against Stockfish" about={`${elo.stockfish.name}. ${elo.stockfish.about}`} rows={elo.stockfish.ablation} />
+              <p>{elo.conclusion}</p>
+              <p>{elo.lesson}</p>
+              <p class="caveat">{elo.caveat}</p>
+            </section>
+          )
+        }
+
+        {
+          p.slug === 'lora-alerting' && (
+            <section>
+              <h2>Publication</h2>
+              <p>
+                “{publication.title}”, {publication.venue}, {publication.issue}. {publication.authors}.
+              </p>
+              <p>
+                <a href={publication.href}>Read the paper (PDF)</a>
+              </p>
+            </section>
+          )
+        }
+
+        {
+          p.builtWith && (
+            <section class="built glass">
+              <h2>How it was built</h2>
+              <p>{p.builtWith}</p>
+            </section>
+          )
+        }
+      </div>
+    </div>
+
+    <nav class="pager wrap" aria-label="More projects">
+      {
+        prev ? (
+          <a href={url(`/work/${prev.slug}/`)} class="pager-link glass">
+            <span class="meta">Previous project</span>
+            <span class="pager-name">{prev.name}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a href={url(`/work/${next.slug}/`)} class="pager-link glass next">
+            <span class="meta">Next project</span>
+            <span class="pager-name">{next.name}</span>
+          </a>
+        ) : (
+          <a href={url('/#experience')} class="pager-link glass next">
+            <span class="meta">Next</span>
+            <span class="pager-name">Experience</span>
+          </a>
+        )
+      }
+    </nav>
+  </article>
+</Base>
+
+<script>
+  import { visitProject } from '../../scripts/game.js';
+  const slug = (document.querySelector('.case') as HTMLElement).dataset.slug!;
+  visitProject(slug);
+</script>
+
+<style>
+  .case-head {
+    padding-top: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .crumb {
+    margin: 0 0 1.25rem;
+  }
+
+  .crumb a {
+    display: inline-block;
+    padding-block: 0.5rem;
+    font-weight: 700;
+  }
+
+  .head-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .head-grid {
+      grid-template-columns: 1.15fr 1fr;
+      gap: 3rem;
+    }
+  }
+
+  .kind {
+    margin: 0 0 0.6rem;
+  }
+
+  .case-name {
+    font-size: clamp(2.4rem, 0.9rem + 4.4vw, 5rem);
+    font-weight: 900;
+    font-stretch: 112%;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    overflow-wrap: break-word;
+    hyphens: manual;
+    background: linear-gradient(100deg, #ffffff 30%, #d8ccff 65%, #ffb8dc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @media (forced-colors: active) {
+    .case-name {
+      color: CanvasText;
+      background: none;
+    }
+  }
+
+  .full-name {
+    font-weight: 700;
+    font-size: var(--step-1);
+    margin: 0.75rem 0 0;
+  }
+
+  .tagline {
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--accent);
+    max-width: 30ch;
+    margin: 1rem 0 1.25rem;
+  }
+
+  .loot {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .loot li {
+    font-size: 0.85rem;
+    font-weight: 650;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    background: rgb(255 209 102 / 0.1);
+    border: 1px solid rgb(255 209 102 / 0.3);
+    color: #ffe3a3;
+  }
+
+  .head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .head-art {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 70% 40%, rgb(139 108 255 / 0.4), transparent 60%),
+      #14113f;
+    border-radius: 26px;
+  }
+
+  .case-grid {
+    display: grid;
+    gap: 2rem 3.5rem;
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  @media (min-width: 62rem) {
+    .case-grid {
+      grid-template-columns: 19rem minmax(0, 1fr);
+    }
+
+    .facts {
+      position: sticky;
+      top: 5.5rem;
+      align-self: start;
+    }
+  }
+
+  .facts {
+    padding: 1.3rem 1.35rem;
+  }
+
+  .facts dl {
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .facts dt {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .facts dd {
+    margin: 0.2rem 0 0;
+    font-weight: 650;
+    line-height: 1.4;
+    font-size: 0.95rem;
+  }
+
+  .facts .chips {
+    margin-top: 0.4rem;
+  }
+
+  .prose {
+    max-width: 44rem;
+    min-width: 0;
+  }
+
+  .summary {
+    font-size: var(--step-1);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose section {
+    margin-top: 2.75rem;
+  }
+
+  .prose h2 {
+    font-size: var(--step-3);
+    font-stretch: 108%;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.9rem;
+  }
+
+  .prose p,
+  .prose li {
+    color: #dcd8fb;
+  }
+
+  .prose ul {
+    padding-left: 1.15rem;
+  }
+
+  .prose li + li {
+    margin-top: 0.6rem;
+  }
+
+  .prose li::marker {
+    color: var(--accent);
+  }
+
+  .caveat {
+    font-style: italic;
+    color: var(--muted) !important;
+  }
+
+  .built {
+    padding: 1.5rem 1.6rem;
+    border-color: rgb(255 209 102 / 0.45);
+  }
+
+  .built h2 {
+    font-size: var(--step-2);
+  }
+
+  .built p {
+    margin: 0;
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: clamp(3rem, 7vw, 5rem);
+  }
+
+  .pager-link {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 14rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .pager-link.next {
+    text-align: right;
+  }
+
+  .pager-name {
+    font-weight: 850;
+    font-stretch: 112%;
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .pager-link:hover {
+    border-color: var(--accent);
+  }
+
+  .pager-link:hover .pager-name {
+    color: var(--accent);
+  }
+
+  @media (max-width: 40rem) {
+    .pager {
+      flex-direction: column;
+    }
+
+    .pager-link.next {
+      text-align: left;
+    }
+  }
+</style>

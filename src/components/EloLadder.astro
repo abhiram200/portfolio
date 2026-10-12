@@ -1,0 +1,202 @@
+---
+// A dot plot on an Elo scale, rendered as a real table so every value is
+// readable as text. The dot is a visual aid beside the number, never the only cue.
+import { fmt } from '../lib/fmt.js';
+
+interface Row {
+  label: string;
+  elo: number;
+  delta?: number | null;
+  approx?: boolean;
+  note?: string;
+}
+
+interface Props {
+  caption: string;
+  about?: string;
+  rows: Row[];
+  showDelta?: boolean;
+}
+
+const { caption, about, rows, showDelta = true } = Astro.props;
+const MIN = 800;
+const MAX = 2100;
+const pos = (elo: number) => `${(((elo - MIN) / (MAX - MIN)) * 100).toFixed(2)}%`;
+const ticks = [1000, 1500, 2000];
+---
+
+<figure class="ladder">
+  <table>
+    <caption>
+      <span class="cap">{caption}</span>
+      {about && <span class="about" set:html={fmt(about)} />}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Configuration</th>
+        <th scope="col" class="num">Elo</th>
+        {showDelta && <th scope="col" class="num">Change</th>}
+        <th scope="col" class="plot-head">
+          <span class="visually-hidden">Position on a scale from {MIN} to {MAX}</span>
+          <span class="scale" aria-hidden="true">
+            {ticks.map((t) => <span style={`left:${pos(t)}`}>{t}</span>)}
+          </span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <th scope="row">{r.label}</th>
+            <td class="num">
+              {r.approx ? '≈' : ''}
+              {r.elo}
+            </td>
+            {showDelta && (
+              <td class="num delta">
+                {r.delta == null ? '' : r.delta > 0 ? `+${r.delta}` : `−${Math.abs(r.delta)}`}
+                {r.note && <span class="note">{r.note}</span>}
+              </td>
+            )}
+            <td class="plot" aria-hidden="true">
+              <span class="track">
+                {ticks.map((t) => <span class="tick" style={`left:${pos(t)}`} />)}
+                <span class="dot" style={`left:${pos(r.elo)}`} />
+              </span>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</figure>
+
+<style>
+  .ladder {
+    margin: 1.75rem 0 2.25rem;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font);
+    font-size: 0.95rem;
+    min-width: 30rem;
+  }
+
+  caption {
+    text-align: left;
+    padding-bottom: 0.75rem;
+  }
+
+  .cap {
+    display: block;
+    font-weight: 700;
+    font-size: var(--step-0);
+  }
+
+  .about {
+    display: block;
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: var(--step--1);
+    margin-top: 0.2rem;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem 0.75rem 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+
+  thead th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-bottom: 1.5px solid var(--ink);
+  }
+
+  tbody th {
+    font-weight: 500;
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  td.num:not(.delta) {
+    font-weight: 700;
+  }
+
+  .note {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .plot,
+  .plot-head {
+    width: 38%;
+    min-width: 9rem;
+    padding-right: 0.5rem;
+  }
+
+  .scale {
+    position: relative;
+    display: block;
+    height: 1.2em;
+  }
+
+  .scale span {
+    position: absolute;
+    transform: translateX(-50%);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.78rem;
+  }
+
+  .track {
+    position: relative;
+    display: block;
+    height: 14px;
+  }
+
+  .track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px solid var(--line);
+  }
+
+  .tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed var(--line);
+  }
+
+  .dot {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg);
+    transform: translate(-50%, -50%);
+  }
+
+  @media (forced-colors: active) {
+    .dot {
+      background: CanvasText;
+    }
+  }
+</style>

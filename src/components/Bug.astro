@@ -1,0 +1,143 @@
+---
+// One of the five hidden bugs. Squashing it reveals a real debugging story.
+import { bugFacts } from '../data/profile.js';
+import { plain } from '../lib/fmt.js';
+
+interface Props {
+  n: number; // 0-4
+  crawl?: boolean;
+  class?: string;
+}
+
+const { n, crawl = false, class: cls } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={['bug', cls, { crawl }]}
+  data-bug={`bug-${n}`}
+  data-fact={plain(bugFacts[n])}
+  aria-label={`Squash hidden bug ${n + 1} of 5`}
+>
+  <svg viewBox="0 0 40 40" aria-hidden="true">
+    <g class="legs" stroke="#ff6fb5" stroke-width="2.2" stroke-linecap="round">
+      <path d="M13 17 L5 13 M13 22 L4 22 M13 27 L5 31"></path>
+      <path d="M27 17 L35 13 M27 22 L36 22 M27 27 L35 31"></path>
+    </g>
+    <path d="M16 8 Q14 3 11 3 M24 8 Q26 3 29 3" stroke="#ff6fb5" stroke-width="2" fill="none" stroke-linecap="round"></path>
+    <circle cx="20" cy="11" r="5" fill="#ff6fb5"></circle>
+    <ellipse cx="20" cy="24" rx="9" ry="11" fill="#e5468f"></ellipse>
+    <path d="M20 14 V35" stroke="#110e33" stroke-width="1.6"></path>
+    <circle cx="16.5" cy="21" r="1.8" fill="#110e33"></circle>
+    <circle cx="23.5" cy="27" r="1.8" fill="#110e33"></circle>
+  </svg>
+</button>
+
+<script>
+  import { squash, state } from '../scripts/game.js';
+
+  const init = () => {
+    const done = new Set(state().bugs);
+    document.querySelectorAll<HTMLButtonElement>('.bug').forEach((b) => {
+      if (done.has(b.dataset.bug!)) b.hidden = true;
+      b.addEventListener('click', () => {
+        if (b.classList.contains('squashed')) return;
+        b.classList.add('squashed');
+        squash(b.dataset.bug!, b.dataset.fact ?? '');
+        b.disabled = true;
+        window.setTimeout(() => (b.hidden = true), 700);
+      });
+    });
+  };
+  init();
+  document.addEventListener('game:reset', () => {
+    document.querySelectorAll<HTMLButtonElement>('.bug').forEach((b) => {
+      b.hidden = false;
+      b.disabled = false;
+      b.classList.remove('squashed');
+    });
+  });
+</script>
+
+<style>
+  .bug {
+    position: absolute;
+    z-index: 5;
+    width: 46px;
+    height: 46px;
+    padding: 5px;
+    border: 0;
+    background: none;
+    cursor: crosshair;
+    border-radius: 50%;
+  }
+
+  .bug svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px rgb(255 111 181 / 0.55));
+    transition: transform 0.2s ease;
+  }
+
+  .bug:hover svg {
+    transform: scale(1.15);
+  }
+
+  .bug.squashed svg {
+    transform: scale(1.4, 0.15);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.5s ease 0.2s;
+  }
+
+  .bug.squashed::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    animation: ping 0.6s ease-out forwards;
+  }
+
+  @keyframes ping {
+    from { transform: scale(0.4); opacity: 1; }
+    to { transform: scale(1.6); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .legs {
+      animation: scuttle 0.35s steps(2) infinite;
+      transform-origin: center;
+    }
+
+    .crawl {
+      animation: crawl 26s linear infinite;
+    }
+
+    .crawl:hover,
+    .crawl:focus-visible {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes scuttle {
+    50% { transform: scaleY(0.82); }
+  }
+
+  /* The hero bug wanders slowly across the headline area */
+  @keyframes crawl {
+    0% { transform: translate(0, 0) rotate(90deg); }
+    22% { transform: translate(min(46vw, 560px), -30px) rotate(90deg); }
+    25% { transform: translate(min(46vw, 560px), -30px) rotate(200deg); }
+    47% { transform: translate(min(30vw, 360px), 120px) rotate(250deg); }
+    50% { transform: translate(min(30vw, 360px), 120px) rotate(330deg); }
+    72% { transform: translate(40px, 40px) rotate(280deg); }
+    75% { transform: translate(40px, 40px) rotate(20deg); }
+    100% { transform: translate(0, 0) rotate(90deg); }
+  }
+
+  @media (forced-colors: active) {
+    .bug {
+      border: 2px solid ButtonText;
+    }
+  }
+</style>

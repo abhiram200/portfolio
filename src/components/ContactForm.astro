@@ -1,0 +1,434 @@
+---
+// Message composer for the contact card.
+// With EmailJS configured (.env), it sends straight to Abhiram's inbox.
+// Without it, or if a send fails, it opens the visitor's email app with the
+// message already written, so it always works.
+import { person } from '../data/profile.js';
+
+const serviceId = import.meta.env.PUBLIC_EMAILJS_SERVICE_ID ?? '';
+const templateId = import.meta.env.PUBLIC_EMAILJS_TEMPLATE_ID ?? '';
+const publicKey = import.meta.env.PUBLIC_EMAILJS_PUBLIC_KEY ?? '';
+const configured = Boolean(serviceId && templateId && publicKey);
+
+const intents = [
+  { id: 'hiring', label: 'Hiring for a role' },
+  { id: 'project', label: 'A project or collaboration' },
+  { id: 'hello', label: 'Just saying hi' },
+];
+---
+
+<div class="composer" id="composer">
+  <div class="chrome" aria-hidden="true">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="chrome-title">new message to {person.name.split(' ')[0]}</span>
+  </div>
+
+  <form
+    id="contact-form"
+    novalidate
+    data-configured={configured ? '1' : ''}
+    data-service={serviceId}
+    data-template={templateId}
+    data-key={publicKey}
+    data-to-email={person.email}
+    data-to-name={person.name}
+  >
+    <h3 class="visually-hidden">Send a message</h3>
+    <fieldset class="intents">
+      <legend>What’s it about?</legend>
+      <div class="intent-row">
+        {
+          intents.map((it, i) => (
+            <label class="intent">
+              <input type="radio" name="intent" value={it.label} checked={i === 0} />
+              <span>{it.label}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <div class="field">
+        <label for="cf-name">Your name</label>
+        <input id="cf-name" name="from_name" type="text" autocomplete="name" required maxlength="100" aria-describedby="cf-name-error" />
+        <p class="error" id="cf-name-error" hidden></p>
+      </div>
+      <div class="field">
+        <label for="cf-email">Your email</label>
+        <input id="cf-email" name="reply_to" type="email" autocomplete="email" required maxlength="200" aria-describedby="cf-email-error" />
+        <p class="error" id="cf-email-error" hidden></p>
+      </div>
+    </div>
+    <div class="field">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" rows="5" required maxlength="5000" aria-describedby="cf-message-error"></textarea>
+      <p class="error" id="cf-message-error" hidden></p>
+    </div>
+
+    <div class="send-row">
+      <button class="button primary send" type="submit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 21 3l-8.5 18-2.2-7.3L3 11.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+        Send message
+      </button>
+      <p class="how">
+        {configured ? 'Goes straight to his inbox.' : 'Opens your email app with this message ready to send.'}
+      </p>
+    </div>
+    <p class="status" id="cf-status" role="status" aria-live="polite"></p>
+  </form>
+
+  <div class="sent" id="cf-sent" hidden tabindex="-1">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#2fa85a"></circle><path d="M19 33l9 9 17-19" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <p class="sent-title" id="cf-sent-title">Message sent.</p>
+    <p class="sent-text" id="cf-sent-text"></p>
+    <button type="button" class="button" id="cf-again">Write another message</button>
+  </div>
+</div>
+
+<script>
+  import { unlock } from '../scripts/game.js';
+
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  if (form) {
+    const status = document.getElementById('cf-status')!;
+    const sent = document.getElementById('cf-sent')!;
+    const sentTitle = document.getElementById('cf-sent-title')!;
+    const sentText = document.getElementById('cf-sent-text')!;
+    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const email = form.dataset.toEmail ?? '';
+    const configured = form.dataset.configured === '1';
+
+    const fields: [string, (v: string) => string | null][] = [
+      ['cf-name', (v) => (v.trim() ? null : 'Enter your name.')],
+      [
+        'cf-email',
+        (v) =>
+          !v.trim() ? 'Enter your email address.' : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? null : 'Enter an email address like name@example.com.',
+      ],
+      ['cf-message', (v) => (v.trim() ? null : 'Write a message.')],
+    ];
+
+    const validate = () => {
+      let firstBad: HTMLElement | null = null;
+      for (const [id, check] of fields) {
+        const input = document.getElementById(id) as HTMLInputElement;
+        const error = document.getElementById(`${id}-error`)!;
+        const message = check(input.value);
+        input.setAttribute('aria-invalid', message ? 'true' : 'false');
+        error.hidden = !message;
+        error.textContent = message ?? '';
+        if (message && !firstBad) firstBad = input;
+      }
+      firstBad?.focus();
+      return !firstBad;
+    };
+
+    const values = () => {
+      const d = new FormData(form);
+      return {
+        intent: String(d.get('intent') ?? ''),
+        name: String(d.get('from_name')).trim(),
+        reply: String(d.get('reply_to')).trim(),
+        message: String(d.get('message')).trim(),
+      };
+    };
+
+    const mailtoHref = (v: ReturnType<typeof values>) =>
+      `mailto:${email}?subject=${encodeURIComponent(`${v.intent}: message from ${v.name}`)}&body=${encodeURIComponent(
+        `${v.message}\n\n${v.name}\n${v.reply}`,
+      )}`;
+
+    const showSent = (title: string, text: string) => {
+      form.hidden = true;
+      sent.hidden = false;
+      sentTitle.textContent = title;
+      sentText.textContent = text;
+      sent.focus();
+      unlock('hello');
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!validate()) return;
+      const v = values();
+
+      if (!configured) {
+        window.location.href = mailtoHref(v);
+        showSent(
+          'Your email app should be open.',
+          `The message is written and addressed to ${email}. Press send there. If nothing opened, email him directly.`,
+        );
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service_id: form.dataset.service,
+            template_id: form.dataset.template,
+            user_id: form.dataset.key,
+            template_params: {
+              from_name: v.name,
+              to_name: form.dataset.toName,
+              reply_to: v.reply,
+              to_email: email,
+              message: `[${v.intent}] ${v.message}`,
+            },
+          }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        status.textContent = '';
+        showSent('Message sent.', `Abhiram will reply to ${v.reply}.`);
+      } catch {
+        status.replaceChildren(
+          'The message couldn’t be sent from here. ',
+          Object.assign(document.createElement('a'), { href: mailtoHref(v), textContent: 'Open it in your email app instead' }),
+          '.',
+        );
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById('cf-again')!.addEventListener('click', () => {
+      form.reset();
+      sent.hidden = true;
+      form.hidden = false;
+      (document.getElementById('cf-name') as HTMLInputElement).focus();
+    });
+  }
+</script>
+
+<style>
+  .composer {
+    border-radius: 20px;
+    background: rgb(12 10 38 / 0.72);
+    border: 1px solid rgb(139 108 255 / 0.4);
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.06);
+    overflow: hidden;
+  }
+
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.03);
+  }
+
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .dot.r { background: #e5468f; }
+  .dot.y { background: #ffd166; }
+  .dot.g { background: #2fa85a; }
+
+  .chrome-title {
+    margin-left: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  form,
+  .sent {
+    padding: 1.1rem 1.2rem 1.25rem;
+  }
+
+  form[hidden],
+  .sent[hidden] {
+    display: none;
+  }
+
+  .intents {
+    border: 0;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    min-width: 0;
+  }
+
+  legend,
+  .field label {
+    font-weight: 650;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+
+  legend {
+    padding: 0;
+  }
+
+  .intent-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .intent {
+    position: relative;
+    margin: 0;
+  }
+
+  .intent input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .intent span {
+    display: inline-block;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: rgb(255 255 255 / 0.04);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .intent input:checked + span {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .intent input:focus-visible + span {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .row {
+    display: grid;
+    gap: 0 0.8rem;
+  }
+
+  @media (min-width: 34rem) {
+    .row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field {
+    margin-bottom: 0.8rem;
+  }
+
+  .field label {
+    display: block;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 0.98rem;
+    color: var(--ink);
+    background: rgb(17 14 51 / 0.9);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 0.65rem 0.8rem;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 7.5rem;
+  }
+
+  input[type='text']:focus-visible,
+  input[type='email']:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--accent);
+    outline-offset: 1px;
+  }
+
+  [aria-invalid='true'] {
+    border-color: var(--pink) !important;
+  }
+
+  .error {
+    color: var(--pink);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.3rem 0 0;
+  }
+
+  .send-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+  }
+
+  .send svg {
+    width: 18px;
+  }
+
+  .how {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .status {
+    margin: 0.6rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .status:empty {
+    display: none;
+  }
+
+  button[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .sent {
+    text-align: center;
+    padding-block: 2rem 2.2rem;
+  }
+
+  .sent:focus {
+    outline: none;
+  }
+
+  .sent svg {
+    width: 64px;
+    margin: 0 auto 0.75rem;
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sent:not([hidden]) svg {
+      animation: pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+
+  @keyframes pop-in {
+    from { transform: scale(0.4); opacity: 0; }
+  }
+
+  .sent-title {
+    font-size: var(--step-2);
+    font-weight: 800;
+    margin: 0 0 0.4rem;
+  }
+
+  .sent-text {
+    color: var(--muted);
+    max-width: 30rem;
+    margin: 0 auto 1.2rem;
+  }
+</style>
