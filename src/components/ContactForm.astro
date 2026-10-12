@@ -11,9 +11,9 @@ const publicKey = import.meta.env.PUBLIC_EMAILJS_PUBLIC_KEY ?? '';
 const configured = Boolean(serviceId && templateId && publicKey);
 
 const intents = [
-  { id: 'hiring', label: 'Hiring for a role' },
-  { id: 'project', label: 'A project or collaboration' },
-  { id: 'hello', label: 'Just saying hi' },
+  { id: 'hiring', label: 'Hiring for a role', short: 'Hiring' },
+  { id: 'project', label: 'A project or collaboration', short: 'Project' },
+  { id: 'hello', label: 'Just saying hi', short: 'Saying hi' },
 ];
 ---
 
@@ -41,7 +41,7 @@ const intents = [
           intents.map((it, i) => (
             <label class="intent">
               <input type="radio" name="intent" value={it.label} checked={i === 0} />
-              <span>{it.label}</span>
+              <span title={it.label}>{it.short}</span>
             </label>
           ))
         }
@@ -267,15 +267,21 @@ const intents = [
     padding: 0;
   }
 
+  /* One segmented row of three equal options at every width. */
   .intent-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: rgb(255 255 255 / 0.03);
   }
 
   .intent {
     position: relative;
     margin: 0;
+    min-width: 0;
   }
 
   .intent input {
@@ -287,14 +293,22 @@ const intents = [
   }
 
   .intent span {
-    display: inline-block;
-    padding: 0.45rem 0.85rem;
+    display: block;
+    padding: 0.5rem 0.4rem;
     border-radius: 999px;
-    border: 1.5px solid var(--line);
-    background: rgb(255 255 255 / 0.04);
+    border: 1.5px solid transparent;
+    text-align: center;
+    white-space: nowrap;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  @media (max-width: 22rem) {
+    .intent span {
+      padding-inline: 0.15rem;
+      font-size: 0.78rem;
+    }
   }
 
   .intent input:checked + span {

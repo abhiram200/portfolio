@@ -136,6 +136,12 @@ import { assistant } from '../data/assistant.js';
   bubble.addEventListener('pointerenter', () => clearTimeout(bubbleTimer));
   bubble.addEventListener('pointerleave', () => hideLater(3500));
   bubble.addEventListener('click', () => open());
+  // Tapping anywhere else dismisses the bubble.
+  document.addEventListener('pointerdown', (e) => {
+    if (root.dataset.state !== 'talk' || root.contains(e.target as Node)) return;
+    clearTimeout(bubbleTimer);
+    root.dataset.state = 'peek';
+  });
 
   // ---- open / close --------------------------------------------------------
   const open = () => {
@@ -252,6 +258,9 @@ import { assistant } from '../data/assistant.js';
   const asked = new Set<string>();
   // Conversation memory: the current topic and which write-up passages were shown.
   const convo: { topic?: string; lastMore?: string; shown: Set<string> } = { shown: new Set() };
+  // True while a bug story is the latest thing in the chat, so a vague
+  // "what is this about?" is read as a question about it.
+  let noteFresh = false;
   const key = (q: string) => q.toLowerCase().replace(/[’']/g, '').replace(/\b(the|a|an|is|what|does|did|he|his)\b/g, '').replace(/[^a-z0-9]+/g, '');
   const renderChips = (list: string[]) => {
     suggestList.replaceChildren(
@@ -289,7 +298,8 @@ import { assistant } from '../data/assistant.js';
     const dots = reducedMotion() ? null : typing();
     const [{ ask }] = await Promise.all([loadBot(), new Promise((r) => setTimeout(r, reducedMotion() ? 0 : 450))]);
     askFn = (q: string) => ask(q);
-    const r = ask(question, convo);
+    const r = ask(question, { ...convo, notes: readNotes(), noteFresh });
+    noteFresh = false;
     answered.add(r.answer);
     if (r.topic) convo.topic = r.topic;
     convo.lastMore = r.more;
@@ -330,6 +340,7 @@ import { assistant } from '../data/assistant.js';
 
   // Bug stories from earlier in the visit are waiting in the chat.
   for (const n of readNotes()) addText('note', n);
+  noteFresh = readNotes().length > 0;
 
   // Say hello once per visit.
   let greeted = false;
@@ -346,6 +357,7 @@ import { assistant } from '../data/assistant.js';
     const note = count >= 5 ? `All 5 bugs squashed! ${fact}` : `Bug ${count} of 5 squashed! ${fact}`;
     saveNote(note);
     addText('note', note);
+    noteFresh = true;
     say(note);
   });
   document.addEventListener('game:unlock', (e) => {

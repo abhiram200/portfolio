@@ -226,6 +226,12 @@ function answerCore(question, ctx = {}) {
 
   let tokens = tokenize(question);
 
+  // Only ForcingKnight has a learning rate; without this, "learning" pulls in
+  // Reverse Learning.
+  if (/ learning rate /.test(q) && !primaryTopic(tokens.filter((t) => t !== 'learning'))) {
+    tokens = [...tokens.filter((t) => t !== 'learning'), 'forcingknight', 'reducelronplateau'];
+  }
+
   // Follow-ups like "how was it trained?" carry on from the last topic.
   if (ctx.topic && !primaryTopic(tokens) && TOPIC_NAMES[ctx.topic] && (PRONOUN.test(q) || REFER_BACK.test(q))) {
     tokens = [...tokens, TOPIC_NAMES[ctx.topic][0]];
@@ -340,6 +346,15 @@ export function ask(question, ctx = {}) {
 
   if (!rest) return { id: 'talk:greeting', answer: greetingReply(seed), links: [] };
 
+  // "Yes" to "want to hear more about X?" continues the current topic.
+  if (YES.test(rest)) {
+    if (ctx.topic || ctx.lastMore) return expand('more', ctx, seed);
+    return { id: 'talk:yes', answer: 'Great! What would you like to know? His current role, a project, or his skills are good places to start.', links: [] };
+  }
+
+  const bug = bugNote(seed, ctx);
+  if (bug) return { ...bug, answer: withGreeting(bug.answer, greeted, seed) };
+
   const small = smallTalk(rest, { greeted, seed });
   if (small) return { ...small, links: [] };
 
@@ -349,6 +364,42 @@ export function ask(question, ctx = {}) {
   const r = answerCore(rest, ctx);
   if (r.id === 'unknown') return { ...r, answer: fallbackReply(seed) };
   return { ...r, answer: withGreeting(r.answer, greeted, seed) };
+}
+
+// Questions about the bug stories that appear when a visitor squashes a bug:
+// "what is this bug 2 thing?", or "what is this about?" right after one shows.
+const YES = /^ *(yes|yeah|yea|yep|yup|sure|ok sure|okay sure|yes please|please|please do|go ahead|sounds good|definitely|of course|absolutely)( please)? *[.!]* *$/;
+const BUG_NUM = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+const BUG_REF = /\bbug ?#? ?([1-5]|one|two|three|four|five)\b|\b(this|that|the|these|those) (bug|bugs|message|messages|note|notes|popup|pop up)\b|\bbugs? (thing|message|note|story|stories|popup|pop up)\b|\bsquash(ed|ing)?\b/;
+const VAGUE = /^ *(what|whats|what is|what does|what do) (is )?(this|that|it|these|those) ?(about|mean|means|thing|is)? *$|^ *(explain|meaning)( this| that)? *$|^ *(huh|what|wdym|what do you mean) *$/;
+
+function bugNote(seed, ctx) {
+  const s = seed.replace(/[’']/g, '').replace(/[^a-z0-9#]+/g, ' ');
+  const ref = s.match(BUG_REF);
+  if (!ref && !(ctx.noteFresh && VAGUE.test(s))) return null;
+  // "squash" alone or "find the bugs" is the game question, handled by small talk.
+  if (ref && !ref[1] && !ctx.noteFresh && !/\b(this|that|these|those|message|note|story|popup|pop up|thing)\b/.test(s)) return null;
+
+  const notes = ctx.notes ?? [];
+  const parsed = notes.map((t) => {
+    const m = t.match(/^(?:Bug (\d) of 5|All 5 bugs) squashed! (.*)$/);
+    return m ? { n: m[1] ? Number(m[1]) : 5, fact: m[2] } : null;
+  }).filter(Boolean);
+  const wanted = ref?.[1] ? BUG_NUM[ref[1]] ?? Number(ref[1]) : null;
+  const note = wanted ? parsed.find((p) => p.n === wanted) : parsed.at(-1);
+  const intro = 'Those notes come from the bug hunt on this page: five bugs hide on the home page, and squashing one reveals a true story from Abhiram’s debugging work.';
+
+  if (!note) {
+    const answer = wanted
+      ? `${intro} You haven’t squashed bug ${wanted} yet, so keep looking!`
+      : `${intro} Click one to squash it, and I’ll keep its story here in the chat.`;
+    return { id: 'bug-note', answer, links: [] };
+  }
+  const topic = primaryTopic(tokenize(note.fact)) ?? undefined;
+  const label = TOPIC_LABEL[topic];
+  const found = parsed.length >= 5 ? 'You’ve found all five.' : `You’ve found ${parsed.length} of 5 so far.`;
+  const answer = `${intro} Bug ${note.n}${label ? ` is about ${label}` : ''}. ${found}${label ? ` Want to hear more about ${label}?` : ''}`;
+  return { id: 'bug-note', answer, links: [], topic };
 }
 
 /**

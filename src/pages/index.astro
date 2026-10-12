@@ -1021,8 +1021,11 @@ const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-
     overflow: hidden;
   }
 
+  /* Shrinks on narrow screens so "something." never breaks mid-word. */
   .finale h2 {
-    font-size: var(--step-5);
+    font-size: min(var(--step-5), 11.5vw);
+    overflow-wrap: normal;
+    hyphens: none;
     font-stretch: 115%;
     letter-spacing: -0.04em;
     line-height: 0.92;

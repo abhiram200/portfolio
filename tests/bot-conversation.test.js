@@ -148,3 +148,41 @@ test('normal questions containing similar words are not expand requests', () => 
   assert.equal(ask('Is he available to continue full time?').id, 'availability');
   assert.equal(ask('Where does he work?').id, 'current-role');
 });
+
+// Bug stories shown after squashing a bug.
+const notes = [
+  'Bug 2 of 5 squashed! At EY he does “history fixes”: correcting historical data loads so previously processed periods match fixed logic and upstream data.',
+  'Bug 4 of 5 squashed! ForcingKnight’s learning rate never dropped because tiny per-epoch gains kept resetting ReduceLROnPlateau.',
+];
+
+test('asking about a numbered bug story explains it', () => {
+  const r = ask('No i mean what is this bug2 thing you said', { notes, shown: new Set() });
+  assert.equal(r.id, 'bug-note');
+  assert.match(r.answer, /bug hunt/);
+  assert.match(r.answer, /Bug 2 is about his work at EY/);
+  assert.equal(r.topic, 'ey');
+});
+
+test('a vague question right after a bug story is about that story', () => {
+  const r = ask('What is this about?', { notes, noteFresh: true, shown: new Set() });
+  assert.equal(r.id, 'bug-note');
+  assert.match(r.answer, /Bug 4 is about ForcingKnight/);
+  assert.equal(ask('What is this about?', { notes, shown: new Set() }).id, 'unknown');
+});
+
+test('asking about a bug not yet squashed says so', () => {
+  assert.match(ask('what is bug 3', { notes, shown: new Set() }).answer, /haven’t squashed bug 3/);
+});
+
+test('game questions still get the game answer', () => {
+  assert.equal(ask('where are the bugs hidden', { notes, shown: new Set() }).id, 'talk:game');
+});
+
+test('"yes" after an offer continues the topic', () => {
+  assert.equal(ask('yes', { topic: 'ey', shown: new Set() }).id, 'more:ey');
+  assert.equal(ask('yes').id, 'talk:yes');
+});
+
+test('the learning-rate story is about ForcingKnight, not Reverse Learning', () => {
+  assert.equal(ask('what is the learning rate bug').id, 'passage:forcingknight');
+});
