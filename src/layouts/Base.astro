@@ -399,6 +399,19 @@ const year = new Date().getFullYear();
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
   }
 
+  /* On phones the trophy button isn't at the right edge, so the panel is
+     pinned just below the header, inset from both screen edges, so it
+     stays on screen. */
+  @media (max-width: 40rem) {
+    .trophy-panel {
+      position: fixed;
+      top: 72px;
+      right: 1rem;
+      max-height: calc(100dvh - 90px);
+      overflow-y: auto;
+    }
+  }
+
   .trophy-title {
     font-weight: 800;
     margin: 0 0 0.2rem;

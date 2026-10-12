@@ -388,7 +388,11 @@ import { assistant } from '../data/assistant.js';
     pointer-events: none;
   }
 
-  .bit > * {
+  /* Only the robot and the open panel take taps; the bubble takes them only
+     while it is showing (see .bubble), so the invisible bubble never opens
+     the chat. */
+  .launcher,
+  .panel {
     pointer-events: auto;
   }
 
