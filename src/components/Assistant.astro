@@ -12,6 +12,7 @@ import { assistant } from '../data/assistant.js';
   </div>
   <p class="visually-hidden" id="bit-live" aria-live="polite"></p>
 
+  <span class="grip" aria-hidden="true"><i></i><i></i><i></i></span>
   <button class="launcher" id="bit-launcher" type="button" aria-expanded="false" aria-controls="bit-panel">
     <span class="visually-hidden">Chat with {assistant.name}, {assistant.role}</span>
     <svg class="robot" viewBox="0 0 120 130" aria-hidden="true">
@@ -779,15 +780,62 @@ import { assistant } from '../data/assistant.js';
     width: 22px;
   }
 
-  @media (max-width: 30rem) {
+  .grip {
+    display: none;
+  }
+
+  /* Phones: peek around the right edge of the screen, as if from behind a
+     wall, instead of rising from the bottom over the page's content. */
+  @media (max-width: 40rem) {
+    .bit {
+      right: 0;
+      bottom: 5.5rem;
+    }
+
     .launcher {
       width: 76px;
       height: 84px;
+      transform: translateX(56%) rotate(-16deg);
+      transform-origin: 75% 55%;
+    }
+
+    .launcher:hover,
+    .launcher:focus-visible,
+    .bit[data-state='talk'] .launcher {
+      transform: translateX(14%) rotate(-6deg);
+    }
+
+    .grip {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      position: absolute;
+      right: 0;
+      bottom: -26px;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .grip i {
+      display: block;
+      width: 11px;
+      height: 7px;
+      border-radius: 4px 0 0 4px;
+      background: #2a2470;
+      border: 2px solid #8b6cff;
+      border-right: 0;
+    }
+
+    .bit[data-state='talk'] .grip,
+    .bit:has(.launcher:hover) .grip,
+    .bit:has(.launcher:focus-visible) .grip {
+      opacity: 0;
     }
 
     .bubble {
-      right: 68px;
-      bottom: 48px;
+      right: 64px;
+      bottom: 54px;
     }
   }
 </style>
