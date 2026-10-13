@@ -387,7 +387,7 @@ function bugNote(seed, ctx) {
   }).filter(Boolean);
   const wanted = ref?.[1] ? BUG_NUM[ref[1]] ?? Number(ref[1]) : null;
   const note = wanted ? parsed.find((p) => p.n === wanted) : parsed.at(-1);
-  const intro = 'Those notes come from the bug hunt on this page: five bugs hide on the home page, and squashing one reveals a true story from Abhiram’s debugging work.';
+  const intro = 'Those notes come from the bug hunt on this page: five bugs hide on the home page, and squashing one reveals a true story from Abhiram’s work.';
 
   if (!note) {
     const answer = wanted

@@ -154,7 +154,7 @@ export const entries = [
     id: 'about',
     q: ['who is abhiram', 'tell me about abhiram', 'who is he', 'introduce him', 'summary of abhiram', 'what does he do', 'give me an overview', 'background'],
     k: ['about', 'bio', 'introduction', 'profile', 'overview'],
-    answer: `${person.name} is a software engineer working across data pipelines and AI systems. He's an ${person.role} at ${person.employer} in ${person.location} (since ${person.roleSince}), where he keeps daily batch ETL pipelines running for an enterprise client, and debugging is the core of the job. On his own time he builds AI systems end to end: a code knowledge graph (SYNAPSE), an agentic coding workspace (AURA), an AI learning platform (Reverse Learning) and a neural chess engine he trained himself (ForcingKnight).`,
+    answer: `${person.name} is a software engineer working across data pipelines and AI systems. He's an ${person.role} at ${person.employer} in ${person.location} (since ${person.roleSince}), where he keeps daily batch ETL pipelines running for an enterprise client. On his own time he builds AI systems end to end: a code knowledge graph (SYNAPSE), an agentic coding workspace (AURA), an AI learning platform (Reverse Learning) and a neural chess engine he trained himself (ForcingKnight).`,
     links: [{ label: 'Home page', href: '/' }],
   },
   {
@@ -175,7 +175,7 @@ export const entries = [
     id: 'strength',
     q: ['what is his biggest strength', 'what is he best at', 'what is he good at', 'core strength', 'why should we hire him', 'what makes him stand out', 'strongest skill'],
     k: ['strength', 'strengths', 'strongest', 'hire', 'stand', 'debugging', 'debug', 'troubleshooting', 'root', 'cause'],
-    answer: `His core strength is debugging. His EY role has made him strong at following a failure across code, schedulers, logs and data files until the root cause is clear, then fixing it properly. His personal projects show the other side: designing and building complete AI systems, from SYNAPSE and AURA to a chess engine he trained himself.`,
+    answer: `Two things stand out. His personal projects show he can design and build complete AI systems end to end, from SYNAPSE and AURA to a chess engine he trained himself. His EY work adds careful debugging: following a failure across code, schedulers, logs and data files until the root cause is clear, then fixing it properly.`,
   },
   {
     id: 'availability',
@@ -384,7 +384,7 @@ export const entries = [
 // the visitor asks to hear more.
 const SHORT = {
   "about": "Abhiram RS is a software engineer working across data pipelines and AI systems. He's an Associate Software Engineer at EY GDS in Trivandrum, and on his own time he builds AI systems like SYNAPSE, AURA, Reverse Learning and ForcingKnight.",
-  "current-role": "He's an Associate Software Engineer at EY GDS in Trivandrum (since Nov 2025), keeping daily batch ETL pipelines running for an enterprise client. Most of the job is debugging.",
+  "current-role": "He's an Associate Software Engineer at EY GDS in Trivandrum (since Nov 2025), keeping daily batch ETL pipelines running for an enterprise client: watching the loads, fixing failures and correcting historical data.",
   "ey-work": "Day to day he keeps batch ETL pipelines (Python, Scala, PySpark, SQL) running through Tidal Enterprise Scheduler, debugs failed loads down to the root cause and re-runs them, and does “history fixes”: correcting historical data loads so older periods match the fixed logic.",
   "perusal": "From Apr 2023 to Mar 2024 he freelanced for Perusal Gulf. His scope was backend and server hosting only: the backend for a role-based welding-certification platform, which he deployed and ran on AWS EC2. Another team member built the frontend.",
   "projects": "Five main ones: AURA, SYNAPSE, Reverse Learning, ForcingKnight, and a LoRa disaster-alerting system. Which one should I tell you about?",

@@ -48,7 +48,7 @@ const intents = [
       pick(
         [
           `I’m ${NAME}, Abhiram’s portfolio assistant. I know what’s on this site inside out, so ask me about his work, projects, skills or how to reach him.`,
-          `I’m ${NAME}, the assistant on Abhiram’s portfolio. The name comes from a stack trace, which is how you follow a bug back to its cause. Debugging happens to be Abhiram’s core strength.`,
+          `I’m ${NAME}, the assistant on Abhiram’s portfolio. The name comes from a stack trace, which is how you follow a bug back to its cause.`,
         ],
         s,
       ),
@@ -96,7 +96,7 @@ const intents = [
       /\b(achievements?|trophy|trophies|side quest|explorer progress|the game)\b/.test(q) ||
       (/\bbugs?\b/.test(q) && /\b(hidden|hiding|find|squash|where|game|catch|page|site|how many)\b/.test(q) && !/\bfix(es|ed|ing)?\b/.test(q)),
     reply: () =>
-      'There’s a little side quest: five bugs are hiding on the home page, and one of them crawls across the top. Click one to squash it and you’ll get a real story from Abhiram’s debugging work. Squashing bugs, opening his projects, chatting with me and a few other things unlock achievements. Check the trophy in the top bar to see your progress.',
+      'There’s a little side quest: five bugs are hiding on the home page, and one of them crawls across the top. Click one to squash it and you’ll get a real story from Abhiram’s work. Squashing bugs, opening his projects, chatting with me and a few other things unlock achievements. Check the trophy in the top bar to see your progress.',
   },
   {
     id: 'joke',

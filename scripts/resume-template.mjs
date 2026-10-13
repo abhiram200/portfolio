@@ -98,7 +98,7 @@ li{margin:0 0 1.2pt}
   <h1>${person.name}</h1>
   <p class="headline">${esc(person.headline)}</p>
   <p class="contact">${contact.map((c) => `<span>${c}</span>`).join('')}</p>
-  <p class="summary">${esc(person.role)} at ${esc(person.employer)}, keeping daily batch ETL pipelines running for an enterprise client, where debugging is the core of the job: following a failure across code, schedulers, logs and data files until the root cause is clear, then fixing it properly. Builds AI systems end to end on his own time. ${esc(person.seeking.summary)}</p>
+  <p class="summary">${esc(person.role)} at ${esc(person.employer)}, keeping daily batch ETL pipelines running for an enterprise client: monitoring the daily loads, fixing failed ones down to the root cause, correcting historical data and resolving defects in Scala and SQL transformation code. Builds AI systems end to end on his own time. ${esc(person.seeking.summary)}</p>
 </header>
 
 <section>

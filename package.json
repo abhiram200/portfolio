@@ -12,7 +12,8 @@
     "resume:private": "node scripts/build-resume.mjs --private",
     "og": "node scripts/build-og.mjs",
     "build:pages": "node scripts/build-pages.mjs",
-    "preview:pages": "node scripts/preview-pages.mjs"
+    "preview:pages": "node scripts/preview-pages.mjs",
+    "check:seo": "node scripts/check-seo.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

@@ -6,6 +6,8 @@ import WorkGraph from '../components/WorkGraph.astro';
 import LevelArt from '../components/LevelArt.astro';
 import Bug from '../components/Bug.astro';
 import { assistant } from '../data/assistant.js';
+import { homeSeo } from '../data/seo.js';
+import { homeSchema } from '../lib/schema.js';
 import {
   person,
   experience,
@@ -19,18 +21,18 @@ import {
   resumeFile,
 } from '../data/profile.js';
 
-const description = `${person.name}: ${person.headline} ${person.role} at ${person.employer}, ${person.location}. Projects, experience, skills and contact.`;
+const siteUrl = Astro.site ? new URL(url('/'), Astro.site).href : null;
 const languages = `${person.languages.slice(0, -1).join(', ')} and ${person.languages.at(-1)}`;
 const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-frontend)', 'var(--violet)'];
 ---
 
-<Base title={`${person.name}, software engineer`} description={description} current="home">
+<Base title={homeSeo.title} description={homeSeo.description} current="home" schema={siteUrl ? homeSchema(siteUrl) : undefined}>
   <!-- HERO -->
   <section class="hero wrap" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="mission" id="mission">
         <svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="9" ry="11" fill="#e5468f"></ellipse><circle cx="20" cy="11" r="5" fill="#ff6fb5"></circle></svg>
-        <span id="mission-text">Side quest: 5 bugs are hiding on this page. Debugging is his day job. Can you find them?</span>
+        <span id="mission-text">Side quest: 5 bugs are hiding on this page. Can you find them?</span>
         <span class="mission-count" id="mission-count">0/5</span>
       </p>
       <h1 id="hero-title" class="name">{person.name}</h1>
@@ -305,7 +307,7 @@ const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-
   const update = () => {
     const n = state().bugs.length;
     count.textContent = `${n}/${BUG_COUNT}`;
-    text.textContent = n >= BUG_COUNT ? 'All 5 bugs squashed. Finding the root cause is his day job, too.' : initial;
+    text.textContent = n >= BUG_COUNT ? 'All 5 bugs squashed. Nice work!' : initial;
     document.getElementById('mission')!.classList.toggle('done', n >= BUG_COUNT);
   };
   update();
@@ -457,8 +459,10 @@ const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-
       animation: pulse 1.8s ease-out infinite;
     }
 
+    /* The hero text slides in without fading, so it counts as painted at
+       once (fading from opacity 0 delays Largest Contentful Paint). */
     .hero-copy > :not(:global(.bug)) {
-      animation: enter 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      animation: slide-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     .hero-copy > :nth-child(2) { animation-delay: 0.05s; }
@@ -480,6 +484,10 @@ const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-
 
   @keyframes enter {
     from { opacity: 0; transform: translateY(18px); }
+  }
+
+  @keyframes slide-in {
+    from { transform: translateY(18px); }
   }
 
   .actions {

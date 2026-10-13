@@ -5,6 +5,8 @@ import EloLadder from '../../components/EloLadder.astro';
 import LevelArt from '../../components/LevelArt.astro';
 import { projects, forcingKnightElo as elo, publication } from '../../data/profile.js';
 import { fmt, plain } from '../../lib/fmt.js';
+import { projectSeo, withSiteName } from '../../data/seo.js';
+import { projectSchema } from '../../lib/schema.js';
 
 export function getStaticPaths() {
   return projects.map((p, i) => ({
@@ -14,11 +16,19 @@ export function getStaticPaths() {
 }
 
 const { project: p, prev, next } = Astro.props;
-const title = `${p.fullName ?? p.name}: ${p.tagline.replace(/\.$/, '')} | Abhiram RS`;
-const description = plain(p.summary);
+const seo = projectSeo[p.slug as keyof typeof projectSeo];
+const siteUrl = Astro.site ? new URL(url('/'), Astro.site).href : null;
 ---
 
-<Base title={title} description={description} current="work">
+<Base
+  title={withSiteName(seo.title)}
+  description={seo.description}
+  current="work"
+  ogType="article"
+  image={`/og/${p.slug}.png`}
+  imageAlt={`${p.name}: ${p.tagline}`}
+  schema={siteUrl ? projectSchema(siteUrl, p) : undefined}
+>
   <article class="case" data-slug={p.slug}>
     <header class="case-head wrap">
       <p class="crumb"><a href={url('/#work')}>All projects</a></p>

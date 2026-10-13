@@ -19,11 +19,11 @@ export const person = {
   languages: ['English', 'Hindi', 'Malayalam'],
   // First-person intro used on the home page.
   intro: [
-    'I work at EY GDS in Trivandrum, keeping a suite of daily batch ETL pipelines running for an enterprise client. Most of the job is debugging: following a failed load across code, the scheduler, logs and data files until the root cause is clear, then fixing it properly.',
+    'I work at EY GDS in Trivandrum, keeping a suite of daily batch ETL pipelines running for an enterprise client: watching the daily loads, fixing the ones that fail, correcting historical data, and resolving defects in the Scala and SQL transformation code.',
     'On my own time I build AI systems end to end: a code knowledge graph, an agentic coding workspace that runs on top of it, an AI learning platform, and a neural chess engine I trained myself.',
   ],
   strength:
-    'Debugging. Following a failure across code, schedulers, logs and data files until the root cause is clear, then fixing it properly.',
+    'Building complete systems end to end, and following a failure across code, schedulers, logs and data files until the root cause is clear.',
   seeking: {
     summary: 'Open to roles in software engineering, data engineering and cloud operations.',
     detail:
@@ -41,7 +41,7 @@ export const experience = [
     start: 'Nov 2025',
     end: 'Present',
     current: true,
-    context: 'Data pipeline support for an enterprise client, in the client’s UAT environment. Debugging is the core of the job.',
+    context: 'Data pipeline support for an enterprise client, in the client’s UAT environment.',
     bullets: [
       'Responsible for keeping a suite of daily batch ETL pipelines (Python, Scala, PySpark, SQL) running reliably in the client’s UAT environment, orchestrated through Tidal Enterprise Scheduler.',
       'Debugs failed loads end to end: traces each failure through scheduler output, Spark job behaviour and the source and target files on Oracle Cloud Infrastructure (browsed with CloudBerry), finds the root cause, fixes it and re-runs the load.',
@@ -519,7 +519,7 @@ export const resumeFile = '/Abhiram-RS-Resume.pdf';
 
 // The bug-hunt game on the home page. Each squashed bug reveals one of these.
 export const bugFacts = [
-  'Debugging is the core of his job at EY: following a failed load across code, the scheduler, logs and data files until the root cause is clear.',
+  'Part of his work at EY is tracing a failed load across code, the scheduler, logs and data files until the root cause is clear.',
   'At EY he does “history fixes”: correcting historical data loads so previously processed periods match fixed logic and upstream data.',
   'ForcingKnight’s learning rate never dropped because tiny per-epoch gains kept resetting ReduceLROnPlateau. He switched to a per-step warmup and cosine schedule, and convergence became steady.',
   'Reverse Learning claims queued jobs with `FOR UPDATE SKIP LOCKED`, so overlapping workers never take the same job.',

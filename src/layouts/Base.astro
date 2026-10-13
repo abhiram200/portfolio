@@ -12,11 +12,32 @@ interface Props {
   description: string;
   current?: 'home' | 'work';
   noindex?: boolean;
+  /** Social preview image, a site path such as /og/aura.png. */
+  image?: string;
+  imageAlt?: string;
+  ogType?: 'website' | 'article';
+  /** JSON-LD object for this page (see src/lib/schema.js). */
+  schema?: object;
 }
 
-const { title, description, current, noindex = false } = Astro.props;
-const canonical = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.site).href : null;
-const ogImage = Astro.site ? new URL(url('/og.png'), Astro.site).href : url('/og.png');
+const {
+  title,
+  description,
+  current,
+  noindex = false,
+  image = '/og.png',
+  imageAlt = `${person.name}: ${person.headline}`,
+  ogType = 'website',
+  schema,
+} = Astro.props;
+// Canonical URLs always end in a slash, matching how GitHub Pages serves
+// directory pages, so /work/aura and /work/aura/ never compete.
+const canonicalPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonical = Astro.site && !noindex ? new URL(canonicalPath, Astro.site).href : null;
+const ogImage = Astro.site ? new URL(url(image), Astro.site).href : url(image);
+// Search engine ownership tokens, set only in the build environment (never committed).
+const googleVerify = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerify = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
 const year = new Date().getFullYear();
 ---
 
@@ -29,22 +50,32 @@ const year = new Date().getFullYear();
     <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
     <meta name="description" content={description} />
     <meta name="author" content={person.name} />
-    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
     {canonical && <link rel="canonical" href={canonical} />}
+    {Astro.site && <link rel="sitemap" type="application/xml" href={url('/sitemap.xml')} />}
+    {googleVerify && <meta name="google-site-verification" content={googleVerify} />}
+    {bingVerify && <meta name="msvalidate.01" content={bingVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
     <link rel="icon" href={url('/favicon-32.png')} sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
     <meta name="theme-color" content="#110e33" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={person.name} />
+    <meta property="og:locale" content="en_IN" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`${person.name}: ${person.headline}`} />
+    <meta property="og:image:alt" content={imageAlt} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    {schema && <script type="application/ld+json" is:inline set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />}
     <script is:inline>
       try {
         if (localStorage.getItem('ar-motion') === 'off') document.documentElement.dataset.motion = 'off';
