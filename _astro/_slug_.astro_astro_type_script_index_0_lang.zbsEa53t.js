@@ -1,0 +1,1 @@
+import{s as e}from"./game.CLzK9QbC.js";var t=document.querySelector(`.case`).dataset.slug;e(t);
