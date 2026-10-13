@@ -1,0 +1,1 @@
+import{s as e}from"./game.DoKx11Cn.js";var t=document.querySelector(`.case`).dataset.slug;e(t);
