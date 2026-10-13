@@ -50,6 +50,7 @@ const year = new Date().getFullYear();
         if (localStorage.getItem('ar-motion') === 'off') document.documentElement.dataset.motion = 'off';
       } catch (e) {}
     </script>
+    {import.meta.env.PROD && <script is:inline data-goatcounter="https://abhiram.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -191,6 +192,7 @@ const year = new Date().getFullYear();
 
 <script>
   import { ACHIEVEMENTS, state, unlock, reset } from '../scripts/game.js';
+  import { track } from '../scripts/track.js';
   import { markExternal } from '../scripts/links.js';
 
   markExternal();
@@ -255,8 +257,20 @@ const year = new Date().getFullYear();
   document.addEventListener('click', (e) => {
     const a = (e.target as Element).closest('a');
     if (!a) return;
-    if (a.getAttribute('href')?.endsWith('Abhiram-RS-Resume.pdf')) unlock('resume');
-    if (a.hasAttribute('data-verify')) unlock('verified');
+    const href = a.getAttribute('href') ?? '';
+    if (href.endsWith('Abhiram-RS-Resume.pdf')) {
+      unlock('resume');
+      track('resume-opened', 'Résumé opened');
+    }
+    if (a.hasAttribute('data-verify')) {
+      unlock('verified');
+      track('credential-verified', 'Credential link opened');
+    }
+    if (href.startsWith('mailto:')) track('email-link', 'Email link clicked');
+    else if (/^https?:\/\//.test(href) && !href.includes(location.host)) {
+      const host = new URL(href).hostname.replace(/^www\./, '');
+      track(`outbound-${host}`, `Outbound: ${host}`);
+    }
   });
 </script>
 
