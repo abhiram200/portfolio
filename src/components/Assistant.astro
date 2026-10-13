@@ -71,7 +71,6 @@ import { assistant } from '../data/assistant.js';
 
 <script>
   import { unlock, reducedMotion } from '../scripts/game.js';
-  import { track } from '../scripts/track.js';
   import { markExternal } from '../scripts/links.js';
   import { suggestions, followUps } from '../data/suggestions.js';
   import { assistant } from '../data/assistant.js';
@@ -147,7 +146,6 @@ import { assistant } from '../data/assistant.js';
   // ---- open / close --------------------------------------------------------
   const open = () => {
     clearTimeout(bubbleTimer);
-    if (panel.hidden) track('chat-opened', 'Chat opened');
     root.dataset.state = 'open';
     panel.hidden = false;
     launcher.setAttribute('aria-expanded', 'true');
@@ -309,7 +307,6 @@ import { assistant } from '../data/assistant.js';
     dots?.remove();
     root.classList.remove('thinking');
     unlock('chat');
-    track('chat-question', 'Chat question asked');
     nextChips(r.topic);
     await streamAnswer(r.answer, r.links);
   };

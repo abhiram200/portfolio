@@ -3,7 +3,6 @@
 // State lives in localStorage when available and falls back to memory.
 
 import { assistant } from '../data/assistant.js';
-import { track } from './track.js';
 
 const KEY = 'ar-explorer-v1';
 
@@ -53,7 +52,6 @@ export function unlock(id) {
   memory.ach = [...memory.ach, id];
   save();
   emit('game:unlock', a);
-  track(`achievement-${id}`, `Achievement: ${a.title}`);
   emit('game:change', memory);
   return true;
 }
@@ -63,7 +61,6 @@ export function squash(bugId, fact = '') {
   memory.bugs = [...memory.bugs, bugId];
   save();
   emit('game:squash', { id: bugId, count: memory.bugs.length, fact });
-  track(`bug-squashed-${memory.bugs.length}`, `Bug ${memory.bugs.length} of ${BUG_COUNT} squashed`);
   emit('game:change', memory);
   if (memory.bugs.length >= BUG_COUNT) unlock('bugs');
   return memory.bugs.length;

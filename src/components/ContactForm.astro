@@ -88,7 +88,6 @@ const intents = [
 
 <script>
   import { unlock } from '../scripts/game.js';
-  import { track } from '../scripts/track.js';
 
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   if (form) {
@@ -140,8 +139,7 @@ const intents = [
         `${v.message}\n\n${v.name}\n${v.reply}`,
       )}`;
 
-    const showSent = (title: string, text: string, via: 'form' | 'email-app') => {
-      track(via === 'form' ? 'contact-sent' : 'contact-email-app', via === 'form' ? 'Contact form sent' : 'Contact form opened email app');
+    const showSent = (title: string, text: string) => {
       form.hidden = true;
       sent.hidden = false;
       sentTitle.textContent = title;
@@ -160,7 +158,6 @@ const intents = [
         showSent(
           'Your email app should be open.',
           `The message is written and addressed to ${email}. Press send there. If nothing opened, email him directly.`,
-          'email-app',
         );
         return;
       }
@@ -186,7 +183,7 @@ const intents = [
         });
         if (!res.ok) throw new Error(String(res.status));
         status.textContent = '';
-        showSent('Message sent.', `Abhiram will reply to ${v.reply}.`, 'form');
+        showSent('Message sent.', `Abhiram will reply to ${v.reply}.`);
       } catch {
         status.replaceChildren(
           'The message couldn’t be sent from here. ',
