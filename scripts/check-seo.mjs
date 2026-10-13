@@ -26,8 +26,7 @@ const walk = (dir) => {
   for (const f of readdirSync(dir)) {
     const p = join(dir, f);
     if (statSync(p).isDirectory()) walk(p);
-    // Search engine verification files (google….html) are plain text, not pages.
-    else if (p.endsWith('.html') && !/^google[0-9a-f]+\.html$/.test(f)) pages.push(p);
+    else if (p.endsWith('.html')) pages.push(p);
   }
 };
 walk(dist);
