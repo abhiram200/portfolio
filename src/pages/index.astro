@@ -177,7 +177,7 @@ const areaColor = ['var(--c-data)', 'var(--c-ai)', 'var(--c-backend)', 'var(--c-
             <p class="evidence">Used in {s.evidence}</p>
             <ul class="chips">
               {s.items.map((it) => (
-                <li>{it}</li>
+                <li class={it.length > 40 ? 'long' : undefined}>{it}</li>
               ))}
             </ul>
           </div>

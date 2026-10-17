@@ -233,6 +233,13 @@ canvas {
   color: var(--ink);
 }
 
+/* A chip whose text wraps onto several lines gets rounded corners instead of
+   a pill shape, so the text stays clear of the curved ends. */
+.chips li.long {
+  border-radius: 12px;
+  padding: 0.45rem 0.75rem;
+}
+
 .meta {
   font-size: var(--step--1);
   color: var(--muted);
